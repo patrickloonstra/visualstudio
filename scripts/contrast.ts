@@ -36,10 +36,19 @@ export function checkBrand(brandDir: string): { errors: string[]; report: string
     const text = pairs.find((p) => p.bg === t.bg && p.fg === t.text && p.use !== "large");
     if (!head) errors.push(`Thema ${t.id}: kop ${t.head} op ${t.bg} is geen toegestaan paar`);
     if (!text) errors.push(`Thema ${t.id}: tekst ${t.text} op ${t.bg} is geen toegestaan paar voor kleine tekst`);
-    const st = byId.get(t.stempel);
+    const st = byId.get(t.mark);
     const bg = byId.get(t.bg);
-    if (st && bg && ratio(st.hex, bg.hex) < 3) errors.push(`Thema ${t.id}: stempel haalt 3:1 niet op ${t.bg}`);
+    if (st && bg && ratio(st.hex, bg.hex) < 3) errors.push(`Thema ${t.id}: merkteken haalt 3:1 niet op ${t.bg}`);
     if (head && text) report.push(`thema ${t.id}: kop ${t.head}, tekst ${t.text} op ${t.bg}`);
+  }
+  // De pagina zelf gebruikt ook alleen toegestane paren.
+  const ui = brand.ui ?? {};
+  for (const [bg, fg] of [["primary", "onPrimary"], ["paper", "ink"], ["surface", "ink"], ["highlight", "ink"]]) {
+    if (!ui[bg] || !ui[fg]) {
+      errors.push(`ui.${bg} of ui.${fg} ontbreekt in brand.json`);
+      continue;
+    }
+    if (!pairs.find((p) => p.bg === ui[bg] && p.fg === ui[fg] && p.use !== "large")) errors.push(`ui: ${ui[fg]} op ${ui[bg]} is geen toegestaan paar`);
   }
   return { errors, report };
 }

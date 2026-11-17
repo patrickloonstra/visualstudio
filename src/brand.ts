@@ -35,14 +35,6 @@ export const color = (id: string) => {
   return c;
 };
 
-/** Achtergrond waarop een voorgrondkleur volgens de toegestane paren mag staan. */
-export const bgFor = (fg: string) => {
-  const options = brand.pairs.filter((p) => p.fg === fg).map((p) => color(p.bg));
-  // Voorkeur: rustige achtergrond (wit/crème/zand) of de hoofdkleur, pas daarna een accent.
-  const rank = (c: Color) => (c.role === "rust" ? 0 : c.role === "achtergrond" ? 1 : 2);
-  return options.sort((a, b) => rank(a) - rank(b))[0]?.id ?? "wit";
-};
-
 export function recolor(svg: string, from: string, to: string) {
   // Multiply-blend uit het bronbestand weghalen: over een foto wordt de kleur anders donkerder dan het merkkleur.
   return svg.replace(new RegExp(from, "gi"), to).replace(/\s*style="mix-blend-mode:multiply"/g, "");

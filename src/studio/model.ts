@@ -3,9 +3,9 @@ import { brand, color } from "../brand";
 import { contrastClass } from "../wcag";
 
 export type Box = { x: number; y: number; w: number; h: number; anchor?: "top" | "bottom" };
-export type Layout = { id: string; label: string; photo: Box | null; text: Box; stempel: { cx: number; cy: number } };
-export type Format = { id: string; label: string; w: number; h: number; margin: number; stempel: number; layouts: Layout[] };
-export type Theme = { id: string; label: string; bg: string; head: string; text: string; stempel: string; primary?: boolean };
+export type Layout = { id: string; label: string; photo: Box | null; text: Box; mark: { cx: number; cy: number } };
+export type Format = { id: string; label: string; w: number; h: number; margin: number; markSize: number; layouts: Layout[] };
+export type Theme = { id: string; label: string; bg: string; head: string; text: string; mark: string; primary?: boolean };
 export type Role = "kicker" | "head" | "sub" | "details" | "cta";
 export type Style = {
   label: string; use: string; font: "heading" | "body"; weight: number; lineHeight: number;

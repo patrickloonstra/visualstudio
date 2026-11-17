@@ -242,8 +242,8 @@
       "bg": "groen",
       "head": "creme",
       "text": "creme",
-      "stempel": "creme",
-      "primary": true
+      "primary": true,
+      "mark": "creme"
     },
     {
       "id": "blauw",
@@ -251,8 +251,8 @@
       "bg": "blauw",
       "head": "creme",
       "text": "wit",
-      "stempel": "creme",
-      "primary": false
+      "primary": false,
+      "mark": "creme"
     },
     {
       "id": "zand",
@@ -260,8 +260,8 @@
       "bg": "zand",
       "head": "groen",
       "text": "groen",
-      "stempel": "groen",
-      "primary": false
+      "primary": false,
+      "mark": "groen"
     },
     {
       "id": "creme",
@@ -269,8 +269,8 @@
       "bg": "creme",
       "head": "groen",
       "text": "groen",
-      "stempel": "groen",
-      "primary": false
+      "primary": false,
+      "mark": "groen"
     }
   ],
   "formats": [
@@ -280,7 +280,6 @@
       "w": 1080,
       "h": 1350,
       "margin": 40,
-      "stempel": 210,
       "layouts": [
         {
           "id": "a",
@@ -297,7 +296,7 @@
             "w": 820,
             "h": 430
           },
-          "stempel": {
+          "mark": {
             "cx": 915,
             "cy": 840
           }
@@ -317,7 +316,7 @@
             "w": 1000,
             "h": 280
           },
-          "stempel": {
+          "mark": {
             "cx": 790,
             "cy": 1140
           }
@@ -337,7 +336,7 @@
             "w": 430,
             "h": 640
           },
-          "stempel": {
+          "mark": {
             "cx": 500,
             "cy": 1010
           }
@@ -352,7 +351,7 @@
             "w": 1000,
             "h": 700
           },
-          "stempel": {
+          "mark": {
             "cx": 915,
             "cy": 1185
           }
@@ -368,12 +367,13 @@
             "h": 690,
             "anchor": "bottom"
           },
-          "stempel": {
+          "mark": {
             "cx": 935,
             "cy": 145
           }
         }
-      ]
+      ],
+      "markSize": 210
     }
   ],
   "postTypes": [
@@ -426,7 +426,9 @@
     "heroLead": "Alles wat je nodig hebt om een post, poster of flyer te maken die er meteen uitziet als Vinchem. Pak een logo, kies een kleur, en ga.",
     "colorIntro": "Groen is de Vinchem-kleur. Blauw en lichtblauw zijn accenten, zand, crème en wit geven rust. Klik op een waarde om hem te kopiëren.",
     "photoIntro": "Echte foto's van onze eigen opkomsten en kampen. Dichtbij, buiten, in actie. Geen stockfoto's.",
-    "voiceIntro": "Zo klinken we: als een enthousiaste leider die ouders en kinderen persoonlijk uitnodigt."
+    "voiceIntro": "Zo klinken we: als een enthousiaste leider die ouders en kinderen persoonlijk uitnodigt.",
+    "inUseIntro": "Zo ziet het eruit als alles samenkomt. Deze voorbeelden komen rechtstreeks uit de studio.",
+    "makeIntro": "Je eigen kleine designstudio. Alleen onze fonts, onze kleuren en ons logo, gebruikt zoals ze bedoeld zijn. Wat je hier maakt, klopt altijd."
   },
   "clearSpace": {
     "draft": true,
@@ -582,5 +584,20 @@
         ]
       }
     ]
-  }
+  },
+  "ui": {
+    "primary": "groen",
+    "onPrimary": "creme",
+    "surface": "creme",
+    "paper": "wit",
+    "line": "zand",
+    "ink": "zwart",
+    "highlight": "lichtblauw"
+  },
+  "photoRules": [
+    "De foto is altijd een blok. Er blijft altijd een stuk effen vlak over.",
+    "Tekst staat op het vlak, nooit direct op de foto.",
+    "De stempel staat half over de rand van de foto."
+  ],
+  "postMark": "stempel"
 }

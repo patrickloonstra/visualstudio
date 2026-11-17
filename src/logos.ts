@@ -2,7 +2,7 @@ import { brand, color, recolor, svgFor, type Logo } from "./brand";
 
 const innerSvg = (file: string) => svgFor({ file } as Logo);
 
-/** Geeft de volledige SVG van een logo in de gevraagde kleur. Stempel = ring + beeldmerk. */
+/** Geeft de volledige SVG van een logo in de gevraagde kleur. Een logo met "inner" (bijv. een ring met beeldmerk) wordt samengesteld. */
 export function logoSvg(logo: Logo, colorId: string): string {
   const hex = color(colorId).hex;
   const base = recolor(svgFor(logo), logo.sourceFill, hex);
@@ -20,10 +20,10 @@ export function logoSvg(logo: Logo, colorId: string): string {
   return base.replace(/<\/svg>\s*$/, innerPlaced + "</svg>");
 }
 
-const fileName = (logo: Logo, colorId: string, ext: string) =>
+export const fileName = (logo: Logo, colorId: string, ext: string) =>
   `${brand.short.toLowerCase()}-${logo.id}-${colorId}.${ext}`;
 
-function download(blob: Blob, name: string) {
+export function download(blob: Blob, name: string) {
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = name;
@@ -35,8 +35,8 @@ export function downloadSvg(logo: Logo, colorId: string) {
   download(new Blob([logoSvg(logo, colorId)], { type: "image/svg+xml" }), fileName(logo, colorId, "svg"));
 }
 
-/** PNG met transparante achtergrond, 2000 px breed. */
-export async function downloadPng(logo: Logo, colorId: string, width = 2000) {
+/** PNG met transparante achtergrond, standaard 2000 px breed. */
+export async function pngBlob(logo: Logo, colorId: string, width = 2000): Promise<Blob> {
   const svg = logoSvg(logo, colorId);
   const vb = /viewBox="([^"]+)"/.exec(svg)?.[1].split(/\s+/).map(Number) ?? [0, 0, 1, 1];
   const height = Math.round((width * vb[3]) / vb[2]);
@@ -47,5 +47,9 @@ export async function downloadPng(logo: Logo, colorId: string, width = 2000) {
   canvas.width = width;
   canvas.height = height;
   canvas.getContext("2d")!.drawImage(img, 0, 0, width, height);
-  canvas.toBlob((b) => b && download(b, fileName(logo, colorId, "png")), "image/png");
+  return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("PNG mislukt"))), "image/png"));
+}
+
+export async function downloadPng(logo: Logo, colorId: string) {
+  download(await pngBlob(logo, colorId), fileName(logo, colorId, "png"));
 }

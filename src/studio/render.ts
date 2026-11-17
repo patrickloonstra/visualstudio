@@ -5,13 +5,16 @@ import { logoSvg } from "../logos";
 import { B, ROLES, allowedColors, defaultColor, fmt, layoutOf, px, themeOf, wordCount, type PostDoc, type Role } from "./model";
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
-const stempel = () => brand.logos.find((l) => (l as { kind?: string }).kind === "mark") ?? brand.logos[0];
+const postMark = () => {
+  const id = (brand as unknown as { postMark?: string }).postMark;
+  return brand.logos.find((l) => l.id === id) ?? brand.logos.find((l) => (l as { kind?: string }).kind === "mark") ?? brand.logos[0];
+};
 
 export function postHtml(d: PostDoc, opts: { editable?: boolean } = {}) {
   const f = fmt(d.format);
   const L = layoutOf(d);
   const t = themeOf(d);
-  const s = f.stempel;
+  const s = f.markSize;
   let photo = "";
   if (L.photo) {
     const p = L.photo;
@@ -35,7 +38,7 @@ export function postHtml(d: PostDoc, opts: { editable?: boolean } = {}) {
   return `<div class="post${opts.editable ? " editable" : ""}" style="width:${f.w}px;height:${f.h}px;background:${color(t.bg).hex}">
     ${photo}
     <div class="p-text" style="left:${tb.x}px;${pos};width:${tb.w}px">${els}</div>
-    <div class="p-stempel" style="left:${L.stempel.cx - s / 2}px;top:${L.stempel.cy - s / 2}px;width:${s}px;height:${s}px">${logoSvg(stempel(), t.stempel)}</div>
+    <div class="p-mark" style="left:${L.mark.cx - s / 2}px;top:${L.mark.cy - s / 2}px;width:${s}px;height:${s}px">${logoSvg(postMark(), t.mark)}</div>
   </div>`;
 }
 
