@@ -1,17 +1,221 @@
 {
   "name": "Scouting Vinchem",
+  "short": "Vinchem",
   "colors": [
-    { "id": "ink", "name": "Logozwart", "hex": "#1D1C1A", "role": "", "ratio": 0 }
+    {
+      "id": "groen",
+      "name": "Vinchem-groen",
+      "hex": "#006554",
+      "role": "achtergrond",
+      "roleLabel": "Hoofdkleur, achtergrond",
+      "ratio": 0.55
+    },
+    {
+      "id": "blauw",
+      "name": "Blauw",
+      "hex": "#007DBA",
+      "role": "accent",
+      "roleLabel": "Accent, vlakken",
+      "ratio": 0.15
+    },
+    {
+      "id": "lichtblauw",
+      "name": "Lichtblauw",
+      "hex": "#4FB9E3",
+      "role": "accent",
+      "roleLabel": "Accent, vlakken",
+      "ratio": 0.15
+    },
+    {
+      "id": "zand",
+      "name": "Zand",
+      "hex": "#DDDCC2",
+      "role": "rust",
+      "roleLabel": "Rustvlak, achtergrond",
+      "ratio": 0.05
+    },
+    {
+      "id": "creme",
+      "name": "Crème",
+      "hex": "#EFECDB",
+      "role": "rust",
+      "roleLabel": "Rustvlak, tekst op groen",
+      "ratio": 0.05
+    },
+    {
+      "id": "wit",
+      "name": "Wit",
+      "hex": "#FFFFFF",
+      "role": "rust",
+      "roleLabel": "Tekst op donker, rustvlak",
+      "ratio": 0.05
+    },
+    {
+      "id": "zwart",
+      "name": "Logozwart",
+      "hex": "#1D1C1A",
+      "role": "tekst",
+      "roleLabel": "Tekst op licht, logo",
+      "ratio": 0
+    }
   ],
-  "pairs": [],
+  "pairs": [
+    {
+      "bg": "groen",
+      "fg": "wit"
+    },
+    {
+      "bg": "groen",
+      "fg": "creme"
+    },
+    {
+      "bg": "blauw",
+      "fg": "wit"
+    },
+    {
+      "bg": "lichtblauw",
+      "fg": "zwart"
+    },
+    {
+      "bg": "wit",
+      "fg": "groen"
+    },
+    {
+      "bg": "creme",
+      "fg": "groen"
+    },
+    {
+      "bg": "zand",
+      "fg": "groen"
+    },
+    {
+      "bg": "wit",
+      "fg": "zwart"
+    },
+    {
+      "bg": "creme",
+      "fg": "zwart"
+    },
+    {
+      "bg": "zand",
+      "fg": "zwart"
+    }
+  ],
   "fonts": {
-    "heading": { "family": "Vollkorn", "file": "fonts/Vollkorn-var.woff2", "italic": "fonts/Vollkorn-Italic-var.woff2", "weights": [400, 900] },
-    "body": { "family": "Vollkorn", "file": "fonts/Vollkorn-var.woff2", "italic": "fonts/Vollkorn-Italic-var.woff2", "weights": [400, 900] }
+    "heading": {
+      "family": "Vollkorn",
+      "file": "fonts/Vollkorn-var.woff2",
+      "italic": "fonts/Vollkorn-Italic-var.woff2",
+      "weights": [
+        400,
+        900
+      ],
+      "use": "Koppen, vet (700 tot 900)"
+    },
+    "body": {
+      "family": "Vollkorn",
+      "file": "fonts/Vollkorn-var.woff2",
+      "italic": "fonts/Vollkorn-Italic-var.woff2",
+      "weights": [
+        400,
+        900
+      ],
+      "use": "Lopende tekst, details, data en tijden (400 tot 500)"
+    }
   },
   "typeScale": {},
   "logos": [
-    { "id": "beeldmerk", "label": "Beeldmerk", "file": "logos/beeldmerk.svg", "sourceFill": "#1D1C1A", "colorways": ["ink"], "minWidth": 160 }
+    {
+      "id": "beeldmerk",
+      "label": "Beeldmerk",
+      "file": "logos/beeldmerk.svg",
+      "sourceFill": "#1D1C1A",
+      "colorways": [
+        "zwart",
+        "groen",
+        "creme",
+        "wit"
+      ],
+      "minWidth": 160,
+      "note": "Lelie met touw. Het hoofdlogo, bijvoorbeeld voor drukwerk, website en profielfoto."
+    },
+    {
+      "id": "stempel",
+      "label": "Stempel",
+      "file": "logos/stempel.svg",
+      "inner": "logos/beeldmerk.svg",
+      "innerFill": "#1D1C1A",
+      "sourceFill": "#006554",
+      "colorways": [
+        "creme",
+        "groen"
+      ],
+      "minWidth": 240,
+      "note": "Ring met 'Scouting Vinchem' en het beeldmerk. De signatuur op elke post, half over de rand van de foto.",
+      "innerScale": 0.62
+    }
   ],
-  "voice": { "rules": [], "examples": [] },
-  "dosDonts": []
+  "photos": [],
+  "voice": {
+    "draft": true,
+    "rules": [
+      "Schrijf zoals je praat: kort, warm en in de jij-vorm.",
+      "Begin met wat er gebeurt, niet met wie het organiseert.",
+      "Eén boodschap per post. Details gaan in de kleine tekst.",
+      "Actieve werkwoorden: kom, doe mee, bouw, ontdek.",
+      "Geen afkortingen of scouting-jargon zonder uitleg voor ouders."
+    ],
+    "examples": [
+      {
+        "goed": "Zaterdag bouwen we een vlot. Kom je ook?",
+        "liever": "Op zaterdag a.s. zal er door de leiding een vlotbouwactiviteit worden georganiseerd."
+      },
+      {
+        "goed": "Wij zoeken leiding voor de welpen. Zin in avontuur?",
+        "liever": "Vacature: leidinggevende (m/v) gezocht voor de welpengroep."
+      },
+      {
+        "goed": "Wat een weekend. Bedankt allemaal!",
+        "liever": "Hierbij willen wij alle deelnemers hartelijk danken voor hun deelname."
+      }
+    ]
+  },
+  "dosDonts": [
+    {
+      "do": true,
+      "text": "Gebruik het originele bestand (SVG of PNG) uit deze gids."
+    },
+    {
+      "do": true,
+      "text": "Geef het logo ruimte. Laat het vrij staan van tekst en randen."
+    },
+    {
+      "do": true,
+      "text": "Kies een kleurvariant die past bij de achtergrond."
+    },
+    {
+      "do": false,
+      "text": "Niet uitrekken, platdrukken of draaien."
+    },
+    {
+      "do": false,
+      "text": "De lelie nooit los gebruiken. Het touw hoort er altijd omheen."
+    },
+    {
+      "do": false,
+      "text": "Niet op een drukke foto zonder vlak of overlay."
+    },
+    {
+      "do": false,
+      "text": "Geen andere kleuren dan de varianten hierboven."
+    },
+    {
+      "do": false,
+      "text": "Geen schaduw, gloed of rand toevoegen."
+    },
+    {
+      "do": false,
+      "text": "Nooit een screenshot of een logo van Google Afbeeldingen."
+    }
+  ]
 }
