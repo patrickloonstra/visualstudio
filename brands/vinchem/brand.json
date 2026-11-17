@@ -130,16 +130,13 @@
   },
   "typeScale": {
     "ig45": {
-      "kicker": 30,
-      "headline": [
-        64,
-        108
-      ],
-      "sub": [
-        38,
-        54
-      ],
-      "body": 30
+      "display": 112,
+      "h1": 96,
+      "h2": 80,
+      "h3": 64,
+      "lead": 48,
+      "body": 34,
+      "small": 28
     }
   },
   "logos": [
@@ -155,7 +152,8 @@
         "wit"
       ],
       "minWidth": 160,
-      "note": "Lelie met touw. Het hoofdlogo, bijvoorbeeld voor drukwerk, website en profielfoto."
+      "note": "Lelie met touw. Het hoofdlogo, bijvoorbeeld voor drukwerk, website en profielfoto.",
+      "kind": "logo"
     },
     {
       "id": "stempel",
@@ -170,7 +168,8 @@
       ],
       "minWidth": 240,
       "note": "Ring met 'Scouting Vinchem' en het beeldmerk. De signatuur op elke post, half over de rand van de foto.",
-      "innerScale": 0.62
+      "innerScale": 0.62,
+      "kind": "mark"
     }
   ],
   "photos": [],
@@ -243,7 +242,8 @@
       "bg": "groen",
       "head": "creme",
       "text": "creme",
-      "stempel": "creme"
+      "stempel": "creme",
+      "primary": true
     },
     {
       "id": "blauw",
@@ -251,7 +251,8 @@
       "bg": "blauw",
       "head": "creme",
       "text": "wit",
-      "stempel": "creme"
+      "stempel": "creme",
+      "primary": false
     },
     {
       "id": "zand",
@@ -259,7 +260,8 @@
       "bg": "zand",
       "head": "groen",
       "text": "groen",
-      "stempel": "groen"
+      "stempel": "groen",
+      "primary": false
     },
     {
       "id": "creme",
@@ -267,7 +269,8 @@
       "bg": "creme",
       "head": "groen",
       "text": "groen",
-      "stempel": "groen"
+      "stempel": "groen",
+      "primary": false
     }
   ],
   "formats": [
@@ -353,6 +356,22 @@
             "cx": 915,
             "cy": 1185
           }
+        },
+        {
+          "id": "e",
+          "label": "Tekst onder",
+          "photo": null,
+          "text": {
+            "x": 40,
+            "y": 620,
+            "w": 1000,
+            "h": 690,
+            "anchor": "bottom"
+          },
+          "stempel": {
+            "cx": 935,
+            "cy": 145
+          }
         }
       ]
     }
@@ -365,7 +384,8 @@
         "kicker": "Zaterdag 14 juni",
         "head": "Vlotten bouwen",
         "sub": "Kom je ook?",
-        "details": "10.00 tot 12.00 uur bij het clubhuis"
+        "details": "10.00 tot 12.00 uur bij het clubhuis",
+        "cta": ""
       }
     },
     {
@@ -375,15 +395,192 @@
         "kicker": "",
         "head": "Boerenkooltocht",
         "sub": "2026",
-        "details": ""
+        "details": "",
+        "cta": ""
+      }
+    },
+    {
+      "id": "oproep",
+      "label": "Oproep voor leiding of vrijwilligers",
+      "fields": {
+        "kicker": "Gezocht",
+        "head": "Leiding voor de welpen",
+        "sub": "Zin in avontuur op zaterdag?",
+        "details": "Je hoeft geen ervaring te hebben. Wij leren je alles.",
+        "cta": "Mail ons voor een kennismaking"
+      }
+    },
+    {
+      "id": "terugblik",
+      "label": "Terugblik met foto's",
+      "fields": {
+        "kicker": "Zomerkamp 2026",
+        "head": "Wat een week!",
+        "sub": "Bedankt allemaal",
+        "details": "",
+        "cta": ""
       }
     }
   ],
-  "limits": {
-    "kicker": 40,
-    "head": 40,
-    "headWords": 6,
-    "sub": 70,
-    "details": 90
+  "copy": {
+    "heroLead": "Alles wat je nodig hebt om een post, poster of flyer te maken die er meteen uitziet als Vinchem. Pak een logo, kies een kleur, en ga.",
+    "colorIntro": "Groen is de Vinchem-kleur. Blauw en lichtblauw zijn accenten, zand, crème en wit geven rust. Klik op een waarde om hem te kopiëren.",
+    "photoIntro": "Echte foto's van onze eigen opkomsten en kampen. Dichtbij, buiten, in actie. Geen stockfoto's.",
+    "voiceIntro": "Zo klinken we: als een enthousiaste leider die ouders en kinderen persoonlijk uitnodigt."
+  },
+  "clearSpace": {
+    "draft": true,
+    "ratio": 0.25,
+    "label": "een kwart van de breedte van het logo",
+    "minPrint": "2,5 cm"
+  },
+  "typeSteps": [
+    [
+      "display",
+      "Display"
+    ],
+    [
+      "h1",
+      "H1"
+    ],
+    [
+      "h2",
+      "H2"
+    ],
+    [
+      "h3",
+      "H3"
+    ],
+    [
+      "lead",
+      "Lead"
+    ],
+    [
+      "body",
+      "Body"
+    ],
+    [
+      "small",
+      "Small"
+    ]
+  ],
+  "styles": {
+    "kicker": {
+      "label": "Kleine regel boven",
+      "use": "Datum of soort activiteit",
+      "font": "body",
+      "weight": 500,
+      "lineHeight": 1.3,
+      "sizes": [
+        "body",
+        "small"
+      ],
+      "maxWords": 6,
+      "maxChars": 40,
+      "rules": [
+        "Kort: datum of soort activiteit.",
+        "Maximaal 6 woorden."
+      ]
+    },
+    "head": {
+      "label": "Kop",
+      "use": "De grote regel",
+      "font": "heading",
+      "weight": 700,
+      "lineHeight": 1.0,
+      "sizes": [
+        "display",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "maxWords": 6,
+      "maxChars": 40,
+      "noAllCaps": true,
+      "rules": [
+        "1 tot 6 woorden.",
+        "Schrijf als een zin, niet in hoofdletters.",
+        "Altijd het grootste op de post."
+      ]
+    },
+    "sub": {
+      "label": "Subregel",
+      "use": "Wat gaan we doen?",
+      "font": "body",
+      "weight": 400,
+      "lineHeight": 1.08,
+      "sizes": [
+        "lead",
+        "body"
+      ],
+      "maxWords": 12,
+      "maxChars": 80,
+      "rules": [
+        "Eén zin die de kop afmaakt.",
+        "Maximaal 12 woorden."
+      ]
+    },
+    "details": {
+      "label": "Details",
+      "use": "Tijd, plek, opgeven",
+      "font": "body",
+      "weight": 400,
+      "lineHeight": 1.3,
+      "sizes": [
+        "body",
+        "small"
+      ],
+      "maxWords": 25,
+      "maxChars": 160,
+      "rules": [
+        "Tijd, plek en hoe je je opgeeft.",
+        "Maximaal 25 woorden."
+      ]
+    },
+    "cta": {
+      "label": "Call to action",
+      "use": "Wat moet de lezer doen?",
+      "font": "body",
+      "weight": 600,
+      "lineHeight": 1.2,
+      "sizes": [
+        "body",
+        "lead"
+      ],
+      "maxWords": 6,
+      "maxChars": 40,
+      "rules": [
+        "Kort en actief, bijvoorbeeld: Geef je op via de site.",
+        "Maximaal 6 woorden."
+      ]
+    }
+  },
+  "typeRules": {
+    "draft": true,
+    "columns": [
+      {
+        "title": "Regelafstand",
+        "items": [
+          "Kop: strak (1,0).",
+          "Subregel: 1,1.",
+          "Details: 1,3."
+        ]
+      },
+      {
+        "title": "Regellengte",
+        "items": [
+          "Kop: maximaal 3 regels.",
+          "Details: niet breder dan ongeveer 45 tekens."
+        ]
+      },
+      {
+        "title": "Nadruk",
+        "items": [
+          "Nadruk met bold, nooit onderstrepen.",
+          "Geen hoofdletters in koppen.",
+          "Italic alleen voor citaten."
+        ]
+      }
+    ]
   }
 }

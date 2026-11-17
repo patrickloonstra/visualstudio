@@ -1,7 +1,8 @@
 import "./style.css";
 import { brand, bgFor, color, fontUrl, photoUrls, rgb, type Logo } from "./brand";
 import { downloadPng, downloadSvg, logoSvg } from "./logos";
-import { mountStudio, studioHtml } from "./studio";
+import { mountStudio, openBriefing, studioHtml } from "./studio/ui";
+import { exposeApi } from "./api";
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 
@@ -322,3 +323,5 @@ document.querySelector("#app")!.innerHTML =
   `<footer class="foot"><div class="wrap">${esc(brand.name)} · Merkgids · Studio 2.0</div></footer><div class="toast" role="status" aria-live="polite"></div>`;
 wire();
 mountStudio(document.querySelector<HTMLElement>("#studio-app")!);
+exposeApi(brand.short.toLowerCase());
+void openBriefing;
