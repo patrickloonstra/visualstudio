@@ -1,72 +1,88 @@
 # Vinchem: layoutregels voor posts
 
-Afgeleid uit drie bestaande Instagram-posts van Patrick ("Haselünne", "Boerenkooltocht 2026", "Nog 8 dagen").
-Dit is de basis voor de sjablonen in de content studio (fase 2). Alles wat hier staat, verwijst naar tokens in `brand.json`.
+## Bron
+
+Drie bestaande Instagram-posts van Patrick: "Haselünne", "Boerenkooltocht 2026" en "Nog 8 dagen". De regels hieronder zijn daaruit afgeleid en daarna met Patrick aangescherpt (zie Besluiten). Alles verwijst naar `brand.json`.
 
 ## Opbouw van elke post
 
-Elke post bestaat uit vier vaste lagen, altijd in deze volgorde:
+Vier vaste lagen, altijd in deze volgorde:
 
 1. **Vlak**: één effen achtergrondkleur over het hele canvas. Geen verloop, geen patroon.
-2. **Foto**: één foto als rechthoekig blok. Nooit full-bleed, er blijft altijd vlak zichtbaar.
-3. **Tekst**: kop + subregel, altijd op het vlak, nooit op de foto.
-4. **Stempel**: ring + beeldmerk, half over de rand van de foto en half op het vlak.
+2. **Foto** (optioneel): één rechthoekig blok met rechte hoeken. Nooit full-bleed, er blijft altijd vlak zichtbaar.
+3. **Tekst**: kleine regel boven, kop, subregel, details, call to action. Altijd op het vlak, nooit op de foto.
+4. **Merkteken**: de stempel (ring met "Scouting Vinchem" en het beeldmerk mét touw), half over de rand van de foto.
 
-## Achtergrond en kleur
+De studio dwingt dit af: tekst die over de foto of buiten de marge wordt gesleept, maakt de post "Niet on brand" en blokkeert de download.
 
-| Vlak | Tekst + stempel | Voorbeeld |
-|---|---|---|
-| Groen | Crème | Boerenkooltocht |
-| Blauw | Crème | Haselünne (zie open punt) |
-| Zand | Groen | Nog 8 dagen |
+## Kleur
 
-Tekst en stempel hebben altijd dezelfde kleur.
+| Thema | Vlak | Kop | Tekst | Stempel |
+|---|---|---|---|---|
+| Groen (primair) | groen | crème | crème | crème |
+| Blauw | blauw | crème | wit | crème |
+| Zand | zand | groen | groen | groen |
+| Crème | crème | groen | groen | groen |
+
+Groen is de hoofdkleur (55%). In de studio is ongeveer de helft van de varianten groen.
 
 ## Typografie
 
-- **Kop**: Vollkorn bold (ca. 700), groot, 1 tot 3 woorden. Krap regelafstand (ca. 1.0).
-- **Subregel**: Vollkorn regular (400), ca. 55% van de kopgrootte, mag 2 tot 3 regels lopen. Regelafstand ca. 1.1.
-- Kop en subregel staan direct onder elkaar, zonder witregel.
-- Links uitgelijnd, nooit gecentreerd.
-- Jaartallen en cijfers in Vollkorn met mediaeval-cijfers (zoals "2026"), dat is het standaardgedrag van het font.
+Eén font: Vollkorn.
 
-## Marges en raster (op 1080 breed)
+| Rol | Gewicht | Groottes (IG 4:5) | Regelafstand | Max woorden |
+|---|---|---|---|---|
+| Kleine regel boven | 500 | Body 34, Small 28 | 1,3 | 6 |
+| Kop | 700 | Display 112, H1 96, H2 80, H3 64 | 1,0 | 6 |
+| Subregel | 400 | Lead 48, Body 34 | 1,08 | 12 |
+| Details | 400 | Body 34, Small 28 | 1,3 | 25 |
+| Call to action | 600 | Body 34, Lead 48 | 1,2 | 6 |
 
-- Buitenmarge ca. 40 px (ongeveer 3,7% van de breedte). Tekst en foto houden deze marge aan.
-- Uitzondering: de foto mag de rechter- of bovenrand tot op de marge naderen, nooit eroverheen.
+- Kop: "Auto" kiest de grootste stap die past. Koppen in hoofdletters zet de studio om naar gewone schrijfwijze.
+- Altijd links uitgelijnd.
+- Jaartallen en cijfers in de mediaeval-cijfers van Vollkorn (standaard).
 
-## Drie layouts (varianten voor "Maak layouts")
+## Marges en raster
 
-### A. Foto rechtsboven, tekst linksonder (Haselünne)
-- Foto: rechts uitgelijnd, boven, ca. 70% breed en 58% hoog. Hoeken recht.
-- Tekst: linksonder de foto, start direct onder de foto.
-- Stempel: rechtsonder op de onderrand van de foto.
+Basisformaat Instagram 4:5, 1080 × 1350. Buitenmarge 40 px. Foto en tekst blijven binnen de marge.
 
-### B. Tekst boven, foto gecentreerd (Boerenkooltocht)
-- Tekst: linksboven.
-- Foto: staand blok, ca. 60% breed, onder de tekst, iets uit het midden naar links. **Afgeronde hoeken** (ca. 2% van de breedte).
-- Stempel: rechtsonder op de rechterrand van de foto.
+## Layouts
 
-### C. Tekst links, foto rechts aflopend (Nog 8 dagen)
-- Foto: rechts, ca. 58% breed en 82% hoog, begint op ca. 40% van de breedte. Hoeken recht.
-- Tekst: links, op ongeveer een kwart van de hoogte. De kop mag de foto net overlappen (tekst blijft leesbaar omdat de lucht op de foto rustig is). **De studio staat dit niet toe**: tekst blijft altijd op het vlak.
-- Stempel: linksonder op de linkerrand van de foto.
+Posities in px op 1080 × 1350.
 
-## Stempel
+| Layout | Foto (x, y, b, h) | Tekstvak (x, y, b, h) | Stempel (midden) | Afgeleid van |
+|---|---|---|---|---|
+| A. Foto boven | 290, 40, 750, 800 | 40, 880, 820, 430 | 915, 840 (onderrand foto) | Haselünne |
+| B. Tekst boven | 150, 340, 640, 970 | 40, 40, 1000, 280 | 790, 1140 (rechterrand foto) | Boerenkooltocht |
+| C. Foto rechts | 500, 40, 540, 1080 | 40, 260, 430, 640 | 500, 1010 (linkerrand foto) | Nog 8 dagen |
+| D. Zonder foto | geen | 40, 360, 1000, 700 | 915, 1185 (rechtsonder) | nieuw |
+| E. Tekst onder | geen | 40, onder uitgelijnd, 1000, 690 | 935, 145 (rechtsboven) | nieuw |
 
-- Ring met "Scouting Vinchem –" (2x rond) met het volledige beeldmerk (lelie mét touw) in het midden.
-- **De lelie nooit los.** Het touw is onderdeel van het logo. (In de bestaande posts staat de lelie zonder touw; dat doen we niet meer.)
-- Diameter ca. 18% van de canvasbreedte.
-- Altijd half over een fotorand. Nooit volledig op de foto, nooit los in een hoek.
-- Kleur volgt de tekstkleur (crème op groen/blauw, groen op zand).
+Met foto toont de studio A, B en C; zonder foto D en E. Varianten die niet passen (tekst te lang voor het tekstvak) laat de studio weg.
+
+## Merkteken
+
+- `postMark`: de stempel. Diameter 210 px (`markSize`), ongeveer 19% van de breedte.
+- Half over een fotorand. Zonder foto in een hoek, binnen de marge.
+- **De lelie nooit los.** Het touw hoort er altijd omheen. (In de oude posts stond de lelie zonder touw; dat doen we niet meer.)
+- Kleur volgt het thema (zie Kleur).
 
 ## Formaten
 
-De voorbeelden zijn vierkant (1:1). CLAUDE.md noemt Instagram 4:5 als eerste formaat voor fase 2.
-Open punt: beginnen we met 1:1 (zoals de bestaande posts) of 4:5?
+Nu alleen Instagram 4:5. Volgen (fase 3): story 9:16, vierkant 1:1, header 1,91:1, poster A4 (PDF).
 
-## Open punten voor Patrick
+## Besluiten
 
-- **Crème op blauw** haalt 3,8:1. Dat is genoeg voor grote koppen (3:1), niet voor kleine tekst (4,5:1). Het staat nu niet in de toegestane paren.
-- **Afgeronde hoeken** alleen bij layout B, of een vaste keuze voor alle layouts?
-- **Eerste formaat** in de studio: 1:1 of 4:5.
+- 2026-11-17: crème op blauw alleen voor koppen (3,8:1); kleine tekst op blauw is wit. (Patrick)
+- 2026-11-17: eerste formaat is Instagram 4:5. (Patrick)
+- 2026-11-17: foto's overal met rechte hoeken. (Patrick)
+- 2026-11-17: de lelie nooit los, altijd met touw. (Patrick)
+- 2026-11-17: alleen het beeldmerk, geen woordmerk; Vollkorn voor koppen en tekst. (Patrick)
+
+## Open punten
+
+- Typeschaal (groottes hierboven) is afgeleid van de voorbeelden en nog niet vastgesteld.
+- Vrije ruimte rond het logo (voorstel: een kwart van de logobreedte) en minimale printmaat (voorstel: 2,5 cm).
+- Regels voor typografie en de tone of voice zijn concepten.
+- CMYK-waarden voor drukwerk ontbreken.
+- Echte foto's voor de gids en voor "In gebruik".

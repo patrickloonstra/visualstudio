@@ -56,6 +56,17 @@ Succes na de eerste test: iemand van Vinchem maakt binnen een week zelf een post
 - Build levert per merk één zelfstandig HTML-bestand op (`vite-plugin-singlefile`), zodat het ook als los bestand te mailen is
 - Deploy op Vercel, per merk een eigen pad of subdomein (bijv. `vinchem.<domein>`)
 - Geen accounts, geen backend in v1
+- Opslag: posts in de browser (IndexedDB) plus export/import als `.merkstudio.json`. Elke post is één `PostDoc` (tekst, foto, layout, thema, aanpassingen)
+
+## Code (stand na fase 2)
+- `src/main.ts`: opstart. Zet kleuren uit `brand.json` als CSS-variabelen: `--c-<id>` en paginarollen `--primary`, `--on-primary`, `--surface`, `--paper`, `--line`, `--ink`, `--highlight` (uit `brand.json > ui`). CSS gebruikt alleen die rollen, nooit merknamen
+- `src/guide.ts`: alle secties van de brandguide, volledig uit `brand.json`
+- `src/studio/model.ts` (PostDoc, varianten, tekst verdelen), `render.ts` (post renderen, tekst passend maken, merkregels checken, PNG), `ui.ts` (briefing, varianten, editor, Mijn posts), `store.ts` (IndexedDB en bestand)
+- `src/wcag.ts`: contrast, gedeeld door check, gids en studio
+- `scripts/contrast.ts`: merkcontrole (structuur, bestanden, WCAG, thema's); draait bij elke build
+- `scripts/make-post.ts` (`npm run post -- <map>`): posts maken uit `post.json` + foto, zie `docs/posts-maken.md`
+- `scripts/build-all.ts` (`npm run build:all`): elk merk in `brands/` (behalve `_*`)
+- Nieuw merk: `docs/nieuw-merk.md`, sjabloon in `brands/_template/`, layoutregels per merk in `brands/<merk>/design.md` (sjabloon: `docs/design-template.md`)
 
 ## brand.json (schets)
 ```json
@@ -81,6 +92,8 @@ Succes na de eerste test: iemand van Vinchem maakt binnen een week zelf een post
 - Fase 3: overige formaten en post-types, PNG/PDF-export
 - Fase 4: deploy, testen met Vinchem, feedback verwerken
 - Fase 5 (pas bij tweede merk): merk-onafhankelijk maken en een nieuw merk toevoegen = alleen een nieuwe map in `brands/`
+
+Stand 2026-11-17: fase 1 en 2 klaar, plus de opbouw voor fase 5 (template, merkcontrole, build per merk; getest met een tijdelijk tweede merk). Studio volgt de referentie-reel (zie `docs/referentie-reel.md`).
 
 ## Stijl van werken
 - Nederlands in de interface, korte zinnen, geen em-dashes

@@ -1,0 +1,441 @@
+{
+  "name": "Naam van het merk",
+  "short": "Merk",
+  "colors": [
+    {
+      "id": "primair",
+      "name": "Hoofdkleur",
+      "hex": "#1F4E79",
+      "role": "achtergrond",
+      "roleLabel": "Hoofdkleur, achtergrond",
+      "ratio": 0.6
+    },
+    {
+      "id": "accent",
+      "name": "Accent",
+      "hex": "#F2A900",
+      "role": "accent",
+      "roleLabel": "Accent",
+      "ratio": 0.2
+    },
+    {
+      "id": "licht",
+      "name": "Licht",
+      "hex": "#F5F1E8",
+      "role": "rust",
+      "roleLabel": "Rustvlak",
+      "ratio": 0.1
+    },
+    {
+      "id": "wit",
+      "name": "Wit",
+      "hex": "#FFFFFF",
+      "role": "rust",
+      "roleLabel": "Tekst op donker",
+      "ratio": 0.1
+    },
+    {
+      "id": "inkt",
+      "name": "Inkt",
+      "hex": "#1A1A1A",
+      "role": "tekst",
+      "roleLabel": "Tekst op licht",
+      "ratio": 0
+    }
+  ],
+  "pairs": [
+    {
+      "bg": "primair",
+      "fg": "wit"
+    },
+    {
+      "bg": "primair",
+      "fg": "licht"
+    },
+    {
+      "bg": "licht",
+      "fg": "primair"
+    },
+    {
+      "bg": "licht",
+      "fg": "inkt"
+    },
+    {
+      "bg": "wit",
+      "fg": "primair"
+    },
+    {
+      "bg": "wit",
+      "fg": "inkt"
+    },
+    {
+      "bg": "accent",
+      "fg": "inkt"
+    }
+  ],
+  "ui": {
+    "primary": "primair",
+    "onPrimary": "wit",
+    "surface": "licht",
+    "paper": "wit",
+    "line": "licht",
+    "ink": "inkt",
+    "highlight": "accent"
+  },
+  "fonts": {
+    "heading": {
+      "family": "Lettertype kop",
+      "file": "fonts/kop.woff2",
+      "weights": [
+        400,
+        900
+      ],
+      "use": "Koppen"
+    },
+    "body": {
+      "family": "Lettertype tekst",
+      "file": "fonts/tekst.woff2",
+      "weights": [
+        400,
+        700
+      ],
+      "use": "Lopende tekst"
+    }
+  },
+  "logos": [
+    {
+      "id": "logo",
+      "label": "Logo",
+      "kind": "logo",
+      "file": "logos/logo.svg",
+      "sourceFill": "#000000",
+      "colorways": [
+        "inkt",
+        "primair",
+        "wit"
+      ],
+      "minWidth": 160,
+      "note": ""
+    }
+  ],
+  "postMark": "logo",
+  "clearSpace": {
+    "draft": true,
+    "ratio": 0.25,
+    "label": "een kwart van de breedte van het logo",
+    "minPrint": "2,5 cm"
+  },
+  "themes": [
+    {
+      "id": "primair",
+      "label": "Hoofdkleur",
+      "bg": "primair",
+      "head": "wit",
+      "text": "wit",
+      "mark": "wit",
+      "primary": true
+    },
+    {
+      "id": "licht",
+      "label": "Licht",
+      "bg": "licht",
+      "head": "primair",
+      "text": "inkt",
+      "mark": "primair"
+    }
+  ],
+  "formats": [
+    {
+      "id": "ig45",
+      "label": "Instagram post 4:5",
+      "w": 1080,
+      "h": 1350,
+      "margin": 40,
+      "layouts": [
+        {
+          "id": "a",
+          "label": "Foto boven",
+          "photo": {
+            "x": 290,
+            "y": 40,
+            "w": 750,
+            "h": 800
+          },
+          "text": {
+            "x": 40,
+            "y": 880,
+            "w": 820,
+            "h": 430
+          },
+          "mark": {
+            "cx": 915,
+            "cy": 840
+          }
+        },
+        {
+          "id": "b",
+          "label": "Tekst boven",
+          "photo": {
+            "x": 150,
+            "y": 340,
+            "w": 640,
+            "h": 970
+          },
+          "text": {
+            "x": 40,
+            "y": 40,
+            "w": 1000,
+            "h": 280
+          },
+          "mark": {
+            "cx": 790,
+            "cy": 1140
+          }
+        },
+        {
+          "id": "c",
+          "label": "Foto rechts",
+          "photo": {
+            "x": 500,
+            "y": 40,
+            "w": 540,
+            "h": 1080
+          },
+          "text": {
+            "x": 40,
+            "y": 260,
+            "w": 430,
+            "h": 640
+          },
+          "mark": {
+            "cx": 500,
+            "cy": 1010
+          }
+        },
+        {
+          "id": "d",
+          "label": "Zonder foto",
+          "photo": null,
+          "text": {
+            "x": 40,
+            "y": 360,
+            "w": 1000,
+            "h": 700
+          },
+          "mark": {
+            "cx": 915,
+            "cy": 1185
+          }
+        },
+        {
+          "id": "e",
+          "label": "Tekst onder",
+          "photo": null,
+          "text": {
+            "x": 40,
+            "y": 620,
+            "w": 1000,
+            "h": 690,
+            "anchor": "bottom"
+          },
+          "mark": {
+            "cx": 935,
+            "cy": 145
+          }
+        }
+      ],
+      "markSize": 210
+    }
+  ],
+  "typeScale": {
+    "ig45": {
+      "display": 112,
+      "h1": 96,
+      "h2": 80,
+      "h3": 64,
+      "lead": 48,
+      "body": 34,
+      "small": 28
+    }
+  },
+  "typeSteps": [
+    [
+      "display",
+      "Display"
+    ],
+    [
+      "h1",
+      "H1"
+    ],
+    [
+      "h2",
+      "H2"
+    ],
+    [
+      "h3",
+      "H3"
+    ],
+    [
+      "lead",
+      "Lead"
+    ],
+    [
+      "body",
+      "Body"
+    ],
+    [
+      "small",
+      "Small"
+    ]
+  ],
+  "styles": {
+    "kicker": {
+      "label": "Kleine regel boven",
+      "use": "Datum of soort activiteit",
+      "font": "body",
+      "weight": 500,
+      "lineHeight": 1.3,
+      "sizes": [
+        "body",
+        "small"
+      ],
+      "maxWords": 6,
+      "maxChars": 40,
+      "rules": [
+        "Kort: datum of soort activiteit.",
+        "Maximaal 6 woorden."
+      ]
+    },
+    "head": {
+      "label": "Kop",
+      "use": "De grote regel",
+      "font": "heading",
+      "weight": 700,
+      "lineHeight": 1.0,
+      "sizes": [
+        "display",
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "maxWords": 6,
+      "maxChars": 40,
+      "noAllCaps": true,
+      "rules": [
+        "1 tot 6 woorden.",
+        "Schrijf als een zin, niet in hoofdletters.",
+        "Altijd het grootste op de post."
+      ]
+    },
+    "sub": {
+      "label": "Subregel",
+      "use": "Wat gaan we doen?",
+      "font": "body",
+      "weight": 400,
+      "lineHeight": 1.08,
+      "sizes": [
+        "lead",
+        "body"
+      ],
+      "maxWords": 12,
+      "maxChars": 80,
+      "rules": [
+        "Eén zin die de kop afmaakt.",
+        "Maximaal 12 woorden."
+      ]
+    },
+    "details": {
+      "label": "Details",
+      "use": "Tijd, plek, opgeven",
+      "font": "body",
+      "weight": 400,
+      "lineHeight": 1.3,
+      "sizes": [
+        "body",
+        "small"
+      ],
+      "maxWords": 25,
+      "maxChars": 160,
+      "rules": [
+        "Tijd, plek en hoe je je opgeeft.",
+        "Maximaal 25 woorden."
+      ]
+    },
+    "cta": {
+      "label": "Call to action",
+      "use": "Wat moet de lezer doen?",
+      "font": "body",
+      "weight": 600,
+      "lineHeight": 1.2,
+      "sizes": [
+        "body",
+        "lead"
+      ],
+      "maxWords": 6,
+      "maxChars": 40,
+      "rules": [
+        "Kort en actief, bijvoorbeeld: Geef je op via de site.",
+        "Maximaal 6 woorden."
+      ]
+    }
+  },
+  "typeRules": {
+    "draft": true,
+    "columns": [
+      {
+        "title": "Regelafstand",
+        "items": [
+          "Kop: strak (1,0).",
+          "Subregel: 1,1.",
+          "Details: 1,3."
+        ]
+      },
+      {
+        "title": "Regellengte",
+        "items": [
+          "Kop: maximaal 3 regels.",
+          "Details: niet breder dan ongeveer 45 tekens."
+        ]
+      },
+      {
+        "title": "Nadruk",
+        "items": [
+          "Nadruk met bold, nooit onderstrepen.",
+          "Geen hoofdletters in koppen.",
+          "Italic alleen voor citaten."
+        ]
+      }
+    ]
+  },
+  "align": [
+    "left"
+  ],
+  "postTypes": [
+    {
+      "id": "aankondiging",
+      "label": "Aankondiging",
+      "fields": {
+        "kicker": "Datum",
+        "head": "Korte kop",
+        "sub": "Eén zin uitleg",
+        "details": "Tijd en plek",
+        "cta": ""
+      }
+    }
+  ],
+  "copy": {
+    "heroLead": "",
+    "colorIntro": "",
+    "photoIntro": "",
+    "voiceIntro": "",
+    "inUseIntro": "",
+    "makeIntro": ""
+  },
+  "photoRules": [],
+  "voice": {
+    "draft": true,
+    "rules": [],
+    "examples": []
+  },
+  "dosDonts": []
+}
