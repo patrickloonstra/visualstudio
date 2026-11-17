@@ -1,10 +1,17 @@
 {
   "name": "Scouting Vinchem",
-  "colors": [],
+  "colors": [
+    { "id": "ink", "name": "Logozwart", "hex": "#1D1C1A", "role": "", "ratio": 0 }
+  ],
   "pairs": [],
-  "fonts": { "heading": { "family": "", "file": "" }, "body": { "family": "", "file": "" } },
+  "fonts": {
+    "heading": { "family": "Vollkorn", "file": "fonts/Vollkorn-var.woff2", "italic": "fonts/Vollkorn-Italic-var.woff2", "weights": [400, 900] },
+    "body": { "family": "Vollkorn", "file": "fonts/Vollkorn-var.woff2", "italic": "fonts/Vollkorn-Italic-var.woff2", "weights": [400, 900] }
+  },
   "typeScale": {},
-  "logos": [],
+  "logos": [
+    { "id": "beeldmerk", "label": "Beeldmerk", "file": "logos/beeldmerk.svg", "sourceFill": "#1D1C1A", "colorways": ["ink"], "minWidth": 160 }
+  ],
   "voice": { "rules": [], "examples": [] },
   "dosDonts": []
 }
