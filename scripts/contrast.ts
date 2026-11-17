@@ -45,5 +45,16 @@ export function checkBrand(brandDir: string): { errors: string[]; report: string
     if (r < min) errors.push(`Kleurpaar haalt WCAG AA niet: ${line}`);
     else report.push(line);
   }
+  // Thema's in de studio mogen alleen toegestane paren gebruiken.
+  for (const t of brand.themes ?? []) {
+    const head = pairs.find((p) => p.bg === t.bg && p.fg === t.head);
+    const text = pairs.find((p) => p.bg === t.bg && p.fg === t.text && p.use !== "large");
+    if (!head) errors.push(`Thema ${t.id}: kop ${t.head} op ${t.bg} is geen toegestaan paar`);
+    if (!text) errors.push(`Thema ${t.id}: tekst ${t.text} op ${t.bg} is geen toegestaan paar voor kleine tekst`);
+    const st = byId.get(t.stempel);
+    const bg = byId.get(t.bg);
+    if (st && bg && ratio(st.hex, bg.hex) < 3) errors.push(`Thema ${t.id}: stempel haalt 3:1 niet op ${t.bg}`);
+    if (head && text) report.push(`thema ${t.id}: kop ${t.head}, tekst ${t.text} op ${t.bg}`);
+  }
   return { errors, report };
 }

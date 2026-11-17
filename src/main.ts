@@ -1,6 +1,7 @@
 import "./style.css";
 import { brand, bgFor, color, fontUrl, photoUrls, rgb, type Logo } from "./brand";
 import { downloadPng, downloadSvg, logoSvg } from "./logos";
+import { mountStudio, studioHtml } from "./studio";
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 
@@ -47,7 +48,7 @@ function toast(msg: string) {
 function nav() {
   return `<nav class="nav" aria-label="Hoofdmenu">
     <a class="nav-brand" href="#start">${logoSvg(brand.logos[0], "creme")}<span>${esc(brand.name)}</span></a>
-    <ul>${sections.map(([id, label]) => `<li><a href="#${id}"${id === "studio" ? ' class="soon"' : ""}>${label}</a></li>`).join("")}</ul>
+    <ul>${sections.map(([id, label]) => `<li><a href="#${id}">${label}</a></li>`).join("")}</ul>
   </nav>`;
 }
 
@@ -229,14 +230,14 @@ function imageSection() {
       <h3 class="sub">Foto en stempel</h3>
       <div class="demo-row">
         ${[
-          ["blauw", "wit", "Haselünne", "We gaan op Zomerkamp naar Duitsland", "a"],
-          ["groen", "creme", "Boerenkooltocht", "2026", "b"],
-          ["zand", "groen", "Nog 8 dagen", "En dan gaan we op Zomerkamp!", "c"],
+          ["blauw", "creme", "Haselünne", "We gaan op Zomerkamp naar Duitsland", "a", "wit"],
+          ["groen", "creme", "Boerenkooltocht", "2026", "b", "creme"],
+          ["zand", "groen", "Nog 8 dagen", "En dan gaan we op Zomerkamp!", "c", "groen"],
         ]
           .map(
-            ([bg, fg, h, s, v]) => `<figure class="demo demo-${v}" style="background:${color(bg).hex};color:${color(fg).hex}">
+            ([bg, fg, h, s, v, sf]) => `<figure class="demo demo-${v}" style="background:${color(bg).hex};color:${color(fg).hex}">
               <div class="demo-photo"></div>
-              <div class="demo-text"><p class="dh">${h}</p><p class="ds">${s}</p></div>
+              <div class="demo-text"><p class="dh">${h}</p><p class="ds" style="color:${color(sf).hex}">${s}</p></div>
               <div class="demo-stempel">${logoSvg(stempel, fg)}</div>
             </figure>`,
           )
@@ -273,12 +274,12 @@ function voiceSection() {
 }
 
 function studioSection() {
-  return `<section id="studio" class="section studio" style="${pairStyle("groen", "creme")}">
+  return `<section id="studio" class="section studio">
     <div class="wrap">
       <p class="kicker">06</p>
       <h2>Studio</h2>
-      <p class="intro">Hier maak je straks zelf een post: tekst invullen, foto kiezen, layout kiezen, downloaden. Altijd in de Vinchem-stijl.</p>
-      <p class="soon-badge">Binnenkort</p>
+      <p class="intro">Maak zelf een post. Vul de tekst in, kies eventueel een foto en klik op een variant. Kleuren, letters en plek liggen vast, zodat het altijd Vinchem blijft.</p>
+      <div id="studio-app">${studioHtml()}</div>
     </div>
   </section>`;
 }
@@ -313,7 +314,6 @@ function wire() {
     }),
   );
 
-  document.querySelector(".nav a.soon")?.addEventListener("click", () => toast("De studio komt in de volgende fase"));
 }
 
 applyTokens();
@@ -321,3 +321,4 @@ document.querySelector("#app")!.innerHTML =
   nav() + hero() + "<main>" + logoSection() + colorSection() + typeSection() + imageSection() + voiceSection() + studioSection() + "</main>" +
   `<footer class="foot"><div class="wrap">${esc(brand.name)} · Merkgids · Studio 2.0</div></footer><div class="toast" role="status" aria-live="polite"></div>`;
 wire();
+mountStudio(document.querySelector<HTMLElement>("#studio-app")!);

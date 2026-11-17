@@ -44,10 +44,8 @@ export const bgFor = (fg: string) => {
 };
 
 export function recolor(svg: string, from: string, to: string) {
-  let out = svg.replace(new RegExp(from, "gi"), to);
-  // Multiply-blend werkt alleen voor de originele (donkere) kleur; wit zou verdwijnen.
-  if (to.toLowerCase() !== from.toLowerCase()) out = out.replace(/\s*style="mix-blend-mode:multiply"/g, "");
-  return out;
+  // Multiply-blend uit het bronbestand weghalen: over een foto wordt de kleur anders donkerder dan het merkkleur.
+  return svg.replace(new RegExp(from, "gi"), to).replace(/\s*style="mix-blend-mode:multiply"/g, "");
 }
 
 export function rgb(hex: string) {

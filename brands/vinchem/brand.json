@@ -73,6 +73,11 @@
       "fg": "wit"
     },
     {
+      "bg": "blauw",
+      "fg": "creme",
+      "use": "large"
+    },
+    {
       "bg": "lichtblauw",
       "fg": "zwart"
     },
@@ -123,7 +128,20 @@
       "use": "Lopende tekst, details, data en tijden (400 tot 500)"
     }
   },
-  "typeScale": {},
+  "typeScale": {
+    "ig45": {
+      "kicker": 30,
+      "headline": [
+        64,
+        108
+      ],
+      "sub": [
+        38,
+        54
+      ],
+      "body": 30
+    }
+  },
   "logos": [
     {
       "id": "beeldmerk",
@@ -217,5 +235,155 @@
       "do": false,
       "text": "Nooit een screenshot of een logo van Google Afbeeldingen."
     }
-  ]
+  ],
+  "themes": [
+    {
+      "id": "groen",
+      "label": "Groen",
+      "bg": "groen",
+      "head": "creme",
+      "text": "creme",
+      "stempel": "creme"
+    },
+    {
+      "id": "blauw",
+      "label": "Blauw",
+      "bg": "blauw",
+      "head": "creme",
+      "text": "wit",
+      "stempel": "creme"
+    },
+    {
+      "id": "zand",
+      "label": "Zand",
+      "bg": "zand",
+      "head": "groen",
+      "text": "groen",
+      "stempel": "groen"
+    },
+    {
+      "id": "creme",
+      "label": "Crème",
+      "bg": "creme",
+      "head": "groen",
+      "text": "groen",
+      "stempel": "groen"
+    }
+  ],
+  "formats": [
+    {
+      "id": "ig45",
+      "label": "Instagram post 4:5",
+      "w": 1080,
+      "h": 1350,
+      "margin": 40,
+      "stempel": 210,
+      "layouts": [
+        {
+          "id": "a",
+          "label": "Foto boven",
+          "photo": {
+            "x": 290,
+            "y": 40,
+            "w": 750,
+            "h": 800
+          },
+          "text": {
+            "x": 40,
+            "y": 880,
+            "w": 820,
+            "h": 430
+          },
+          "stempel": {
+            "cx": 915,
+            "cy": 840
+          }
+        },
+        {
+          "id": "b",
+          "label": "Tekst boven",
+          "photo": {
+            "x": 150,
+            "y": 340,
+            "w": 640,
+            "h": 970
+          },
+          "text": {
+            "x": 40,
+            "y": 40,
+            "w": 1000,
+            "h": 280
+          },
+          "stempel": {
+            "cx": 790,
+            "cy": 1140
+          }
+        },
+        {
+          "id": "c",
+          "label": "Foto rechts",
+          "photo": {
+            "x": 500,
+            "y": 40,
+            "w": 540,
+            "h": 1080
+          },
+          "text": {
+            "x": 40,
+            "y": 260,
+            "w": 430,
+            "h": 640
+          },
+          "stempel": {
+            "cx": 500,
+            "cy": 1010
+          }
+        },
+        {
+          "id": "d",
+          "label": "Zonder foto",
+          "photo": null,
+          "text": {
+            "x": 40,
+            "y": 360,
+            "w": 1000,
+            "h": 700
+          },
+          "stempel": {
+            "cx": 915,
+            "cy": 1185
+          }
+        }
+      ]
+    }
+  ],
+  "postTypes": [
+    {
+      "id": "opkomst",
+      "label": "Opkomstaankondiging",
+      "fields": {
+        "kicker": "Zaterdag 14 juni",
+        "head": "Vlotten bouwen",
+        "sub": "Kom je ook?",
+        "details": "10.00 tot 12.00 uur bij het clubhuis"
+      }
+    },
+    {
+      "id": "activiteit",
+      "label": "Activiteit of evenement",
+      "fields": {
+        "kicker": "",
+        "head": "Boerenkooltocht",
+        "sub": "2026",
+        "details": ""
+      }
+    }
+  ],
+  "limits": {
+    "kicker": 40,
+    "head": 40,
+    "headWords": 6,
+    "sub": 70,
+    "details": 90
+  }
 }
