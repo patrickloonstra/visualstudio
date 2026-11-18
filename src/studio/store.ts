@@ -10,7 +10,9 @@ const BRAND = typeof __BRAND_ID__ === "string" ? __BRAND_ID__ : B.short.toLowerC
 export const storage = { mode: "local" as "local" | "server", loggedIn: false, persistent: true, problem: "" };
 
 // ---------- Server ----------
-const api = (action: string, extra = "") => new URL(`../api/?action=${action}&brand=${encodeURIComponent(BRAND)}${extra}`, location.href).toString();
+// De API staat naast de tool (contenttool/api/) of één map hoger (contenttool/vinchem/ -> contenttool/api/).
+let apiBase = "api/";
+const api = (action: string, extra = "") => new URL(`${apiBase}?action=${action}&brand=${encodeURIComponent(BRAND)}${extra}`, location.href).toString();
 
 async function call<T>(action: string, body?: unknown): Promise<T> {
   const res = await fetch(api(action), {
@@ -29,8 +31,13 @@ async function call<T>(action: string, body?: unknown): Promise<T> {
 export async function initStorage() {
   if (!location.protocol.startsWith("http")) return;
   try {
-    const res = await fetch(api("status"), { credentials: "same-origin" });
-    const s = await res.json();
+    let s: { server?: boolean; setup?: boolean; error?: string; brand?: string; loggedIn?: boolean } | null = null;
+    for (const base of ["api/", "../api/"]) {
+      apiBase = base;
+      const res = await fetch(api("status"), { credentials: "same-origin" }).catch(() => null);
+      s = res ? await res.json().catch(() => null) : null;
+      if (s?.server) break;
+    }
     if (!s?.server) return;
     // Er staat een server naast de pagina: dan altijd daar opslaan, nooit stilletjes in de browser.
     storage.mode = "server";

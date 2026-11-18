@@ -18,7 +18,12 @@ if (!is_file(__DIR__ . '/config.php')) {
     exit;
 }
 $config = require __DIR__ . '/config.php';
-$dataDir = rtrim($config['data_dir'] ?? (__DIR__ . '/../data'), '/');
+$dataDir = rtrim($config['data_dir'] ?? (dirname((string)($_SERVER['DOCUMENT_ROOT'] ?? dirname(__DIR__, 2))) . '/merkstudio-data'), '/');
+// Ligt de data toch binnen de website? Dan in elk geval de map afschermen voor Apache.
+$docRoot = realpath((string)($_SERVER['DOCUMENT_ROOT'] ?? '')) ?: null;
+if ($docRoot && str_starts_with($dataDir . '/', $docRoot . '/') && is_dir($dataDir) && !is_file("$dataDir/.htaccess")) {
+    @file_put_contents("$dataDir/.htaccess", "Require all denied\n");
+}
 
 const MAX_JSON = 2_000_000;          // 2 MB per post (zonder foto)
 const MAX_PHOTO = 12_000_000;        // 12 MB per foto
@@ -29,7 +34,9 @@ header('X-Content-Type-Options: nosniff');
 header('Cache-Control: no-store');
 
 session_name('merkstudio');
-session_set_cookie_params(['lifetime' => 60 * 60 * 24 * 30, 'path' => '/', 'secure' => !empty($_SERVER['HTTPS']), 'httponly' => true, 'samesite' => 'Strict']);
+// Cookie alleen voor de map van de tool (bijv. /contenttool/), niet voor de rest van de site.
+$toolPath = rtrim(str_replace('\\', '/', dirname(dirname($_SERVER['SCRIPT_NAME'] ?? '/api/index.php'))), '/') . '/';
+session_set_cookie_params(['lifetime' => 60 * 60 * 24 * 30, 'path' => $toolPath, 'secure' => !empty($_SERVER['HTTPS']), 'httponly' => true, 'samesite' => 'Strict']);
 ini_set('session.gc_maxlifetime', (string)(60 * 60 * 24 * 30));
 session_start();
 
@@ -93,8 +100,10 @@ function throttle(string $dataDir): void {
     flock($fh, LOCK_UN); fclose($fh);
 }
 
+/** Pad vanaf de domeinroot, zodat de foto werkt waar de tool ook staat (/contenttool/ of /contenttool/vinchem/). */
 function photoUrl(string $brand, string $id, int $v): string {
-    return "../api/?action=photo&brand=$brand&id=$id&v=$v";
+    $api = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/api/index.php')), '/');
+    return "$api/?action=photo&brand=$brand&id=$id&v=$v";
 }
 
 $action = (string)($_GET['action'] ?? '');

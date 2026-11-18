@@ -1,5 +1,17 @@
 # Online zetten op een gewone PHP-host (Cloud86 / Plesk)
 
+## Variant A: in een map van een bestaande site (bijv. vinchem.nl/contenttool/)
+
+Eén merk, direct in de map:
+
+```bash
+npm run build:server -- vinchem
+```
+
+Upload de inhoud van `dist/server/` (plus `api/config.php`) naar `httpdocs/contenttool/`. De tool staat dan op `https://vinchem.nl/contenttool/`. De rest van de site merkt er niets van: de tool gebruikt alleen zijn eigen map, en het inlog-cookie geldt alleen voor `/contenttool/`. Posts en foto's komen in `merkstudio-data/` naast de webmap (niet erin).
+
+## Variant B: eigen subdomein met meerdere merken (bijv. merk.patrickloonstra.nl)
+
 Resultaat: `https://merk.patrickloonstra.nl/vinchem/`. Posts en foto's worden als gewone bestanden op de server bewaard (flat file). Geen database, niets te onderhouden. Je Framer-site op patrickloonstra.nl blijft ongemoeid.
 
 ## Wat je nodig hebt

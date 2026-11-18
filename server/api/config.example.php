@@ -3,10 +3,12 @@
 // Een hash maak je met:  php -r 'echo password_hash("jouw-code", PASSWORD_DEFAULT), PHP_EOL;'
 // of met:                 php tools/hash.php jouw-code
 return [
-    // Waar posts en foto's staan. Standaard één map BOVEN de webmap van het subdomein,
-    // dus niet via internet bereikbaar. (Plesk: /var/www/vhosts/<domein>/merkstudio-data)
-    // Lukt dat niet, gebruik dan __DIR__ . '/../data' (afgeschermd met .htaccess, minder veilig).
-    'data_dir' => dirname(__DIR__, 2) . '/merkstudio-data',
+    // Waar posts en foto's staan. Standaard één map BOVEN de webmap van het domein, dus niet
+    // via internet bereikbaar, ook als de tool in een submap staat (bijv. vinchem.nl/contenttool/).
+    // Plesk: /var/www/vhosts/<domein>/merkstudio-data
+    // Lukt dat niet ("Kan de opslagmap niet maken"), gebruik dan __DIR__ . '/../data'
+    // (afgeschermd met .htaccess, minder veilig).
+    'data_dir' => dirname((string)($_SERVER['DOCUMENT_ROOT'] ?? dirname(__DIR__, 2))) . '/merkstudio-data',
 
     // Toegangscode per merk (als hash). De sleutel is de mapnaam van het merk.
     'brands' => [

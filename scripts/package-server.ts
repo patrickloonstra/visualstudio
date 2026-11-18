@@ -7,6 +7,9 @@
 //     api/.htaccess
 //     data/.htaccess        alleen nodig als de data in de webmap moet staan
 //
+// Eén merk direct in de hoofdmap (bijv. vinchem.nl/contenttool/):
+//   npm run build:server -- vinchem
+//
 // Draai eerst: npm run build:all
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 
@@ -14,15 +17,22 @@ const out = "dist/server";
 rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
 
+const single = process.argv[2];
 const brands = readdirSync("dist").filter((d) => d !== "server" && existsSync(`dist/${d}/index.html`));
 if (!brands.length) throw new Error("Geen gebouwde merken. Draai eerst: npm run build:all");
-for (const b of brands) cpSync(`dist/${b}`, `${out}/${b}`, { recursive: true });
+if (single && !brands.includes(single)) throw new Error(`Merk "${single}" is niet gebouwd. Wel: ${brands.join(", ")}`);
+if (single) cpSync(`dist/${single}/index.html`, `${out}/index.html`);
+else for (const b of brands) cpSync(`dist/${b}`, `${out}/${b}`, { recursive: true });
 
 cpSync("server/api", `${out}/api`, { recursive: true, filter: (src) => !src.endsWith("config.php") });
 mkdirSync(`${out}/data`, { recursive: true });
 cpSync("server/data/.htaccess", `${out}/data/.htaccess`);
 writeFileSync(`${out}/data/index.html`, "");
 
+if (single) {
+  console.log(`Klaar: ${out}/ met alleen ${single} in de hoofdmap. Upload de inhoud naar de map waar de tool moet staan.`);
+  process.exit(0);
+}
 const names = brands.map((b) => {
   const j = JSON.parse(readFileSync(`brands/${b}/brand.json`, "utf8"));
   return { id: b, name: j.name as string };
