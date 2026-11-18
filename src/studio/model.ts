@@ -3,8 +3,14 @@ import { brand, color } from "../brand";
 import { contrastClass } from "../wcag";
 
 export type Box = { x: number; y: number; w: number; h: number; anchor?: "top" | "bottom" };
-export type Layout = { id: string; label: string; photo: Box | null; text: Box; mark: { cx: number; cy: number } };
-export type Format = { id: string; label: string; w: number; h: number; margin: number; markSize: number; layouts: Layout[] };
+export type Layout = {
+  id: string; label: string; photo: Box | null; text: Box;
+  /** Stempel: midden op een fotorand ("edge"), of los in een hoek als er geen foto is. */
+  mark: { cx: number; cy: number; edge?: "top" | "bottom" | "left" | "right" };
+  /** Linkerbovenhoek van het officiële logo. */
+  logo?: { x: number; y: number };
+};
+export type Format = { id: string; label: string; w: number; h: number; margin: number; markSize: number; logoSize?: number; layouts: Layout[] };
 export type Theme = { id: string; label: string; bg: string; head: string; text: string; mark: string; primary?: boolean };
 export type Role = "kicker" | "head" | "sub" | "details" | "cta";
 export type Style = {
@@ -30,7 +36,19 @@ export type PostDoc = {
   overrides: Partial<Record<Role | "block", ElementOverride>>;
   /** Merkteken op de post (id uit brand.json > postMarks). Leeg = het eerste. */
   mark?: string;
+  /** Deel van de stempel dat over de foto valt (bijv. 1/3 of 2/3) en de draaiing in graden. */
+  markOverlap?: number;
+  markRotate?: number;
 };
+
+type Variation = { overlap: number[]; rotate: number[] };
+const pick = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)];
+/** Willekeurige stand van de stempel binnen wat brand.json toestaat. */
+export function rollMark(): { markOverlap?: number; markRotate?: number } {
+  const v = (brand as unknown as { markVariation?: Variation }).markVariation;
+  if (!v) return {};
+  return { markOverlap: pick(v.overlap), markRotate: pick(v.rotate) };
+}
 
 export const ROLES: Role[] = ["kicker", "head", "sub", "details", "cta"];
 
@@ -63,6 +81,7 @@ export function newDoc(type = B.postTypes[0].id, fields?: Partial<Fields>): Post
     theme: (B.themes.find((t) => t.primary) ?? B.themes[0]).id,
     fields: { ...({ kicker: "", head: "", sub: "", details: "", cta: "" } as Fields), ...pt.fields, ...fields },
     photo: null, overrides: {},
+    ...rollMark(),
   };
 }
 
@@ -101,7 +120,7 @@ export function makeVariants(base: PostDoc, keepLayouts?: string[]): PostDoc[] {
   const pool = f.layouts.filter((l) => (base.photo ? !!l.photo : !l.photo)).map((l) => l.id);
   const primary = B.themes.find((t) => t.primary) ?? B.themes[0];
   const others = shuffle(B.themes.filter((t) => t !== primary));
-  const make = (layout: string, theme: string) => ({ ...structuredClone(base), layout, theme, overrides: {} });
+  const make = (layout: string, theme: string) => ({ ...structuredClone(base), layout, theme, overrides: {}, ...rollMark() });
   if (keepLayouts) {
     // Kleuren schudden: zelfde layouts, andere toegestane thema's. Primair blijft ongeveer de helft.
     const seq = keepLayouts.map((_, i) => (i % 2 === 0 ? primary : others[(i >> 1) % others.length]));

@@ -1,7 +1,7 @@
 // Rendert een PostDoc naar HTML op ware grootte, past tekst in de typeschaal en controleert de merkregels.
 import { toPng } from "html-to-image";
 import { brand, color } from "../brand";
-import { markSvg, postMarks } from "../logos";
+import { logoSvg, markSvg, postMarks } from "../logos";
 import { B, ROLES, allowedColors, defaultColor, fmt, layoutOf, px, themeOf, wordCount, type PostDoc, type Role } from "./model";
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
@@ -35,8 +35,34 @@ export function postHtml(d: PostDoc, opts: { editable?: boolean } = {}) {
   return `<div class="post${opts.editable ? " editable" : ""}" style="width:${f.w}px;height:${f.h}px;background:${color(t.bg).hex}">
     ${photo}
     <div class="p-text" style="left:${tb.x}px;${pos};width:${tb.w}px">${els}</div>
-    <div class="p-mark" style="left:${L.mark.cx - ms / 2}px;top:${L.mark.cy - ms / 2}px;width:${ms}px;height:${ms}px">${markSvg(d.mark, t.mark)}</div>
+    ${logoHtml(d)}
+    ${markHtml(d, ms)}
   </div>`;
+}
+
+/** Officieel logo in de vaste vrije hoek van de layout. */
+function logoHtml(d: PostDoc) {
+  const L = layoutOf(d);
+  const id = (brand as unknown as { postLogo?: string }).postLogo;
+  const logo = brand.logos.find((l) => l.id === id);
+  if (!logo || !L.logo) return "";
+  const s = fmt(d.format).logoSize ?? 150;
+  return `<div class="p-logo" style="left:${L.logo.x}px;top:${L.logo.y}px;width:${s}px;height:${s}px">${logoSvg(logo, themeOf(d).mark)}</div>`;
+}
+
+/** Stempel: op de fotorand, voor een deel (markOverlap) over de foto, eventueel gedraaid. */
+function markHtml(d: PostDoc, ms: number) {
+  const L = layoutOf(d);
+  let { cx, cy } = L.mark;
+  if (L.photo && L.mark.edge && d.markOverlap !== undefined) {
+    const inward = (d.markOverlap - 0.5) * ms; // >0 = meer over de foto
+    if (L.mark.edge === "bottom") cy -= inward;
+    if (L.mark.edge === "top") cy += inward;
+    if (L.mark.edge === "right") cx -= inward;
+    if (L.mark.edge === "left") cx += inward;
+  }
+  const rot = d.markRotate ? `transform:rotate(${d.markRotate}deg);` : "";
+  return `<div class="p-mark" style="left:${cx - ms / 2}px;top:${cy - ms / 2}px;width:${ms}px;height:${ms}px;${rot}">${markSvg(d.mark, themeOf(d).mark)}</div>`;
 }
 
 /** Kiest per rol zonder vaste grootte de grootste stap die past. Geeft false als de tekst niet past. */
@@ -92,6 +118,8 @@ export function check(post: HTMLElement, d: PostDoc, fitted: boolean): Issue[] {
     const r = e.getBoundingClientRect();
     return { x: (r.left - origin.left) / scale, y: (r.top - origin.top) / scale, w: r.width / scale, h: r.height / scale };
   };
+  const logoEl = post.querySelector(".p-logo");
+  const lg = logoEl ? rel(logoEl) : null;
   const photoEl = post.querySelector(".p-photo");
   const ph = photoEl ? rel(photoEl) : null;
   post.querySelectorAll<HTMLElement>(".p-el").forEach((e) => {
@@ -101,6 +129,8 @@ export function check(post: HTMLElement, d: PostDoc, fitted: boolean): Issue[] {
     if (b.x < m || b.y < m || b.x + b.w > f.w - m || b.y + b.h > f.h - m) issues.push({ role: r, msg: `${B.styles[r].label} komt buiten de marge.` });
     if (ph && b.x < ph.x + ph.w && b.x + b.w > ph.x && b.y < ph.y + ph.h && b.y + b.h > ph.y)
       issues.push({ role: r, msg: `${B.styles[r].label} staat op de foto. Tekst hoort op het vlak.` });
+    if (lg && b.x < lg.x + lg.w && b.x + b.w > lg.x && b.y < lg.y + lg.h && b.y + b.h > lg.y)
+      issues.push({ role: r, msg: `${B.styles[r].label} staat over het logo. Het logo heeft vrije ruimte nodig.` });
   });
   return issues;
 }

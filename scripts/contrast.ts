@@ -33,6 +33,11 @@ export function checkBrand(brandDir: string): { errors: string[]; report: string
   for (const t of brand.themes ?? []) ["bg", "head", "text", "mark"].forEach((x) => known(t[x], `Thema ${t.id}.${x}`));
   if (brand.themes && !brand.themes.some((t: { primary?: boolean }) => t.primary)) errors.push(`themes: zet bij één thema "primary": true`);
   const logoIds = new Map((brand.logos ?? []).map((l: { id: string; colorways: string[] }) => [l.id, l.colorways ?? []]));
+  if (brand.postLogo) {
+    const cw = logoIds.get(brand.postLogo) as string[] | undefined;
+    if (!cw) errors.push(`postLogo "${brand.postLogo}" is geen logo-id`);
+    else for (const t of brand.themes ?? []) if (!cw.includes(t.mark)) errors.push(`postLogo: logo heeft geen kleurvariant "${t.mark}" (thema ${t.id})`);
+  }
   for (const m of brand.postMarks ?? []) {
     for (const id of [m.logo, m.inner].filter(Boolean)) {
       if (!logoIds.has(id)) errors.push(`postMarks ${m.id}: "${id}" is geen logo-id`);

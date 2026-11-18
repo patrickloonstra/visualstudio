@@ -6,12 +6,13 @@ Drie bestaande Instagram-posts van Patrick: "Haselünne", "Boerenkooltocht 2026"
 
 ## Opbouw van elke post
 
-Vier vaste lagen, altijd in deze volgorde:
+Vijf vaste lagen, altijd in deze volgorde:
 
 1. **Vlak**: één effen achtergrondkleur over het hele canvas. Geen verloop, geen patroon.
 2. **Foto** (optioneel): één rechthoekig blok met rechte hoeken. Nooit full-bleed, er blijft altijd vlak zichtbaar.
 3. **Tekst**: kleine regel boven, kop, subregel, details, call to action. Altijd op het vlak, nooit op de foto.
-4. **Stempel**: op elke post, alleen de ring met "Scouting Vinchem". Half over de rand van de foto.
+4. **Logo**: het officiële logo (lelie met bruggetje en touw) in een vaste vrije hoek per layout: linksboven, rechtsboven of linksonder.
+5. **Stempel**: alleen de ring met "Scouting Vinchem", voor 1/3 of 2/3 over de rand van de foto, af en toe 30° of 60° gedraaid. Mag over tekst vallen.
 
 De studio dwingt dit af: tekst die over de foto of buiten de marge wordt gesleept, maakt de post "Niet on brand" en blokkeert de download.
 
@@ -63,7 +64,7 @@ Met foto toont de studio A, B en C; zonder foto D en E. Varianten die niet passe
 ## Merkteken
 
 - Logo (lelie met bruggetje en touw) en stempel (ring met tekst) zijn twee losse elementen. Nooit samengevoegd.
-- Op elke post staat de stempel (`postMarks`: alleen `stempel`). Het logo komt niet op posts; dat is voor drukwerk en de website. Diameter 210 px (`markSize`), ongeveer 19% van de breedte.
+- Op elke post staat de stempel (`postMarks`: alleen `stempel`), plus het logo in een hoek (`postLogo`, `logoSize` 150 px, positie per layout in `logo`). Diameter 210 px (`markSize`), ongeveer 19% van de breedte.
 - Half over een fotorand. Zonder foto in een hoek, binnen de marge.
 - **De lelie nooit los.** Het touw hoort er altijd omheen. (In de oude posts stond de lelie zonder touw; dat doen we niet meer.)
 - Kleur volgt het thema (zie Kleur).
@@ -74,7 +75,9 @@ Nu alleen Instagram 4:5. Volgen (fase 3): story 9:16, vierkant 1:1, header 1,91:
 
 ## Besluiten
 
-- 2026-11-18: logo en stempel zijn losse elementen, nooit samengevoegd. Op elke post altijd de stempel, het logo komt niet op posts (logo is voor drukwerk en website). Pagina compact: direct de studio, stijlgids via een link. (Patrick)
+- 2026-11-18: op elke post het officiële logo in een vrije hoek (studio kiest per layout: A, C, D, E linksboven; B rechtsboven). Stempel voor 1/3 of 2/3 over de foto (willekeurig) en af en toe 30° of 60° gedraaid; "Stempel anders" kiest een nieuwe stand. Kleine regel boven: datumkiezer ("Zaterdag 21 juni") en vaste woorden. (Patrick)
+
+- 2026-11-18: logo en stempel zijn losse elementen, nooit samengevoegd. Op elke post altijd de stempel. (Logo niet op posts: later dezelfde dag vervangen, zie hierboven.) Pagina compact: direct de studio, stijlgids via een link. (Patrick)
 - 2026-11-17: crème op blauw alleen voor koppen (3,8:1); kleine tekst op blauw is wit. (Patrick)
 - 2026-11-17: eerste formaat is Instagram 4:5. (Patrick)
 - 2026-11-17: foto's overal met rechte hoeken. (Patrick)

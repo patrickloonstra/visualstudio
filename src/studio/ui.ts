@@ -1,7 +1,7 @@
 // Studio-interface: briefing, varianten, editor met inspectiepaneel, Mijn posts.
 import { brand, color } from "../brand";
 import {
-  B, ROLES, allowedColors, defaultColor, enforce, fmt, layoutOf, makeVariants, newDoc, splitPasted, stepLabel, themeOf, wordCount,
+  B, ROLES, allowedColors, defaultColor, enforce, fmt, layoutOf, makeVariants, newDoc, rollMark, splitPasted, stepLabel, themeOf, wordCount,
   type PostDoc, type Role,
 } from "./model";
 import { check, fileSlug, fit, postHtml, renderPng, type Issue } from "./render";
@@ -71,6 +71,39 @@ function snapshot() {
   if (S.history.length > 60) S.history.shift();
 }
 
+// ---------- Datum en vaste woorden ----------
+type Picker = { date?: boolean; presets?: string[] };
+const pickers = () => (brand as unknown as { pickers?: Partial<Record<Role, Picker>> }).pickers ?? {};
+
+/** "2026-06-21" -> "Zaterdag 21 juni" */
+export function formatDate(iso: string) {
+  const d = new Date(iso + "T12:00:00");
+  if (isNaN(d.getTime())) return "";
+  const s = d.toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" });
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+/** Kalender en knoppen onder een veld. "where" = brief (formulier) of ins (editor). */
+function pickerHtml(r: Role, where: "brief" | "ins") {
+  const p = pickers()[r];
+  if (!p) return "";
+  return `<div class="pickers">
+    ${p.date ? `<label class="pick-date" title="Kies een datum"><span>Datum kiezen</span><input type="date" data-pick-date="${r}" data-where="${where}"></label>` : ""}
+    ${(p.presets ?? []).map((w) => `<button type="button" class="chip" data-preset="${esc(w)}" data-role="${r}" data-where="${where}">${esc(w)}</button>`).join("")}
+  </div>`;
+}
+
+/** Zet een gekozen waarde in het juiste veld (formulier of open post). */
+function applyPick(r: Role, where: string, value: string) {
+  if (where === "brief") {
+    const input = $<HTMLFormElement>(".brief-form").elements.namedItem(r) as HTMLInputElement;
+    input.value = value;
+    return;
+  }
+  if (!S.doc) return;
+  update((x) => (x.fields[r] = value), { inspector: true });
+}
+
 // ---------- HTML ----------
 export function studioHtml() {
   const formats = B.formats.map((f) => `<option value="${f.id}">${esc(f.label)}</option>`).join("");
@@ -79,7 +112,7 @@ export function studioHtml() {
     const st = B.styles[r];
     const opt = r === "head" ? "" : " <small>(optioneel)</small>";
     return `<label>${esc(st.label)}${opt}<span class="hint">${esc(st.use)}</span>
-      ${multi ? `<textarea name="${r}" rows="3" maxlength="${st.maxChars}"></textarea>` : `<input name="${r}" maxlength="${st.maxChars}">`}</label>`;
+      ${multi ? `<textarea name="${r}" rows="3" maxlength="${st.maxChars}"></textarea>` : `<input name="${r}" maxlength="${st.maxChars}">`}</label>${pickerHtml(r, "brief")}`;
   };
   return `<div class="studio-app">
     <div class="st-bar">
@@ -305,6 +338,10 @@ function inspectorPost(d: PostDoc) {
     ${postMarks().length < 2 ? "" : `<div class="ins-block"><span class="ins-label">Merkteken</span>
       <div class="pills">${postMarks().map((m) => `<button type="button" class="pill${(d.mark ?? postMarks()[0].id) === m.id ? " on" : ""}" data-mark="${m.id}">${esc(m.label)}</button>`).join("")}</div>
     </div>`}
+    ${(brand as unknown as { markVariation?: unknown }).markVariation ? `<div class="ins-block"><span class="ins-label">Stempel</span>
+      <div><button type="button" class="btn small ghost" data-act="remark">Stempel anders</button></div>
+      <p class="ins-note">Kiest een nieuwe stand: meer of minder over de foto, recht of gedraaid.</p>
+    </div>` : ""}
     <div class="ins-block"><span class="ins-label">Foto</span>
       <label class="btn small ghost">${d.photo ? "Andere foto" : "Foto toevoegen"}<input type="file" accept="image/*" data-act="photo" hidden></label>
       ${d.photo ? `<button type="button" class="link" data-act="nophoto">Foto weghalen</button>` : ""}
@@ -332,6 +369,7 @@ function inspectorText(d: PostDoc, r: Role) {
   return `<h4>${esc(st.label)}</h4>
     <label class="ins-block"><span class="ins-label">Woorden</span>
       <textarea rows="${r === "details" ? 4 : 2}" data-act="text" maxlength="${st.maxChars}">${esc(d.fields[r])}</textarea></label>
+    ${pickerHtml(r, "ins")}
     <div class="ins-block"><span class="ins-label">Stijl</span>
       <div class="styles">${ROLES.filter((x) => d.fields[x]?.trim() || x === r)
         .map((x) => {
@@ -496,6 +534,7 @@ export function mountStudio(root: HTMLElement) {
     if (!el || (el as HTMLButtonElement).disabled) return;
     const act = el.dataset.act;
     const d = S.doc;
+    if (el.dataset.preset) return applyPick(el.dataset.role as Role, el.dataset.where!, el.dataset.preset);
     if (act === "brief") return openBriefing("new");
     if (act === "rebrief") return openBriefing("edit");
     if (act === "close") return dialog.close();
@@ -568,6 +607,7 @@ export function mountStudio(root: HTMLElement) {
     // Inspectie-acties
     if (el.dataset.select) return select(el.dataset.select as Role);
     if (act === "deselect") return select(null);
+    if (act === "remark") return update((x) => Object.assign(x, rollMark()), { inspector: true });
     if (el.dataset.mark) return update((x) => (x.mark = el.dataset.mark), { inspector: true });
     if (el.dataset.layout) return update((x) => ((x.layout = el.dataset.layout!), (x.overrides = {})), { inspector: true });
     if (el.dataset.theme) return update((x) => ((x.theme = el.dataset.theme!), ROLES.forEach((r) => delete x.overrides[r]?.color)), { inspector: true });
@@ -597,8 +637,26 @@ export function mountStudio(root: HTMLElement) {
     }
     if (t.dataset.act === "zoom") update((x) => x.photo && (x.photo.zoom = Number(t.value)), { history: false });
   });
+  // Klik op "Datum kiezen" opent direct de kalender.
+  root.addEventListener("click", (e) => {
+    const lab = (e.target as HTMLElement).closest<HTMLElement>(".pick-date");
+    const input = lab?.querySelector<HTMLInputElement>("input[type=date]");
+    if (!input) return;
+    try {
+      input.showPicker();
+      e.preventDefault();
+    } catch {
+      /* oudere browser: het veld zelf werkt ook */
+    }
+  });
+
   root.addEventListener("change", async (e) => {
     const t = e.target as HTMLInputElement;
+    if (t.dataset.pickDate && t.value) {
+      applyPick(t.dataset.pickDate as Role, t.dataset.where!, formatDate(t.value));
+      t.value = "";
+      return;
+    }
     if (t.dataset.act === "text" || t.dataset.act === "zoom") snapshot();
     if (t.dataset.act === "photo" && t.files?.[0]) {
       const src = await readPhoto(t.files[0]);

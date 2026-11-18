@@ -295,7 +295,12 @@
           },
           "mark": {
             "cx": 915,
-            "cy": 840
+            "cy": 840,
+            "edge": "bottom"
+          },
+          "logo": {
+            "x": 40,
+            "y": 40
           }
         },
         {
@@ -310,12 +315,17 @@
           "text": {
             "x": 40,
             "y": 40,
-            "w": 1000,
+            "w": 830,
             "h": 280
           },
           "mark": {
             "cx": 790,
-            "cy": 1140
+            "cy": 1140,
+            "edge": "right"
+          },
+          "logo": {
+            "x": 890,
+            "y": 40
           }
         },
         {
@@ -335,7 +345,12 @@
           },
           "mark": {
             "cx": 500,
-            "cy": 1010
+            "cy": 1010,
+            "edge": "left"
+          },
+          "logo": {
+            "x": 40,
+            "y": 40
           }
         },
         {
@@ -351,6 +366,10 @@
           "mark": {
             "cx": 915,
             "cy": 1185
+          },
+          "logo": {
+            "x": 40,
+            "y": 40
           }
         },
         {
@@ -367,10 +386,15 @@
           "mark": {
             "cx": 935,
             "cy": 145
+          },
+          "logo": {
+            "x": 40,
+            "y": 40
           }
         }
       ],
-      "markSize": 210
+      "markSize": 210,
+      "logoSize": 150
     }
   ],
   "postTypes": [
@@ -594,7 +618,8 @@
   "photoRules": [
     "De foto is altijd een blok. Er blijft altijd een stuk effen vlak over.",
     "Tekst staat op het vlak, nooit direct op de foto.",
-    "De stempel staat op elke post, half over de rand van de foto."
+    "Op elke post staat het logo in een vrije hoek: linksboven, rechtsboven of linksonder.",
+    "De stempel staat op elke post, voor 1/3 of 2/3 over de foto. Hij mag een beetje gedraaid staan."
   ],
   "postMarks": [
     {
@@ -603,5 +628,33 @@
       "logo": "stempel",
       "scale": 1
     }
-  ]
+  ],
+  "postLogo": "beeldmerk",
+  "markVariation": {
+    "overlap": [
+      0.333,
+      0.667
+    ],
+    "rotate": [
+      0,
+      0,
+      30,
+      -30,
+      60,
+      -60
+    ]
+  },
+  "pickers": {
+    "kicker": {
+      "date": true,
+      "presets": [
+        "Opkomst",
+        "Zomerkamp",
+        "Weekendkamp",
+        "Gezocht",
+        "Terugblik",
+        "Activiteit"
+      ]
+    }
+  }
 }

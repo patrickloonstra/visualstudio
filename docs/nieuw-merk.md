@@ -34,6 +34,9 @@ Een merk is één map in `brands/`. De code hoeft niet te veranderen.
 | `fonts` | `heading` en `body`: `family`, `file`, `italic`, `weights`, `use` | Patrick |
 | `logos` | Per logo: `kind` (`logo` of `mark`), `file`, `sourceFill`, `colorways`, `minWidth`. Elk logo is één los bestand | Patrick |
 | `postMarks` | Keuzes voor het merkteken op een post: één logo, of een logo met een tweede logo in het midden (`inner`, `innerScale`). `scale` = grootte t.o.v. `markSize`. De eerste is standaard | Patrick |
+| `postLogo` | Logo dat op elke post in een hoek komt. Positie per layout in `formats > layouts > logo`, grootte `logoSize` | Patrick |
+| `markVariation` | Stand van het merkteken: `overlap` (deel over de foto, bijv. `[0.333, 0.667]`) en `rotate` (graden). De studio kiest willekeurig | Patrick |
+| `pickers` | Per tekstrol een datumkiezer (`date: true`) en/of vaste woorden (`presets`) | Klant |
 | `clearSpace` | Vrije ruimte rond het logo en minimale printmaat | Patrick |
 | `themes` | Kleurthema's voor posts: `bg`, `head`, `text`, `mark`. Eén thema met `"primary": true` | Patrick, check bewaakt de paren |
 | `formats` | Formaten met `w`, `h`, `margin`, `markSize` en `layouts` (posities in px op ware grootte) | Uit `design.md` |
