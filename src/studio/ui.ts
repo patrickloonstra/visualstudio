@@ -524,6 +524,35 @@ function readPhoto(file: File): Promise<string> {
   });
 }
 
+// ---------- PNG opslaan ----------
+/**
+ * Slaat de post op als echt PNG-bestand. Een losse data:-link wordt door sommige browsers
+ * (Safari) niet als PNG bewaard; een Blob met type image/png wel. Op een telefoon opent het
+ * deelmenu, zodat je hem direct in Foto's bewaart of naar Instagram/WhatsApp stuurt.
+ */
+async function savePng(dataUrl: string, name: string) {
+  const bytes = Uint8Array.from(atob(dataUrl.split(",")[1]), (c) => c.charCodeAt(0));
+  const file = new File([bytes], name, { type: "image/png" });
+  const touch = matchMedia("(pointer: coarse)").matches;
+  if (touch && navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: name });
+      return;
+    } catch (err) {
+      if ((err as Error).name === "AbortError") return; // gebruiker sloot het deelmenu
+    }
+  }
+  const url = URL.createObjectURL(file);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  a.type = "image/png";
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
 // ---------- Koppelen ----------
 export function mountStudio(root: HTMLElement) {
   wireCanvas();
@@ -570,12 +599,21 @@ export function mountStudio(root: HTMLElement) {
       return;
     }
     if (act === "png" && d) {
-      const { png, issues } = await renderPng(d);
-      if (issues.length) return toast("Eerst de punten onder de post oplossen.");
-      const a = document.createElement("a");
-      a.href = png;
-      a.download = fileSlug(d) + ".png";
-      a.click();
+      const btn = el as HTMLButtonElement;
+      btn.disabled = true;
+      btn.textContent = "Bezig…";
+      try {
+        const { png, issues } = await renderPng(d);
+        if (issues.length) return toast("Eerst de punten onder de post oplossen.");
+        if (!png.startsWith("data:image/png")) throw new Error("geen PNG");
+        await savePng(png, fileSlug(d) + ".png");
+        toast("PNG gedownload.");
+      } catch (err) {
+        toast(`Downloaden mislukt: ${err instanceof Error ? err.message : "onbekende fout"}. Probeer het nog eens.`);
+      } finally {
+        btn.textContent = "Download PNG";
+        btn.disabled = S.issues.length > 0;
+      }
       return;
     }
     if (act === "export") return downloadFile(await listPosts());
