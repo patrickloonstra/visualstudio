@@ -132,7 +132,7 @@ export function guideHtml(studio: string) {
     `<section id="studio" class="view section studio"><div class="wrap"><h1 class="view-title">Maak een post</h1><p class="intro">Vul je tekst in, kies een foto en een variant, en download. Kleuren, letters en logo kloppen altijd.</p><div id="studio-app">${studio}</div></div></section>` +
     guideView() +
     "</main>" +
-    `<footer class="foot"><div class="wrap foot-row"><span>${esc(brand.name)} · Studio 2.0</span><span class="foot-version">${versionLine()}</span></div></footer><div class="toast" role="status" aria-live="polite"></div>`
+    `<footer class="foot"><div class="wrap foot-row"><span class="foot-maker">© ${new Date(typeof __BUILD__ === "object" ? __BUILD__.time : Date.now()).getFullYear()} Patrick Loonstra · gemaakt door <a href="https://patrickloonstra.nl" target="_blank" rel="noopener">patrickloonstra.nl</a></span><span class="foot-version">${versionLine()}</span></div></footer><div class="toast" role="status" aria-live="polite"></div>`
   );
 }
 
