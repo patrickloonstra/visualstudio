@@ -594,28 +594,14 @@
   "photoRules": [
     "De foto is altijd een blok. Er blijft altijd een stuk effen vlak over.",
     "Tekst staat op het vlak, nooit direct op de foto.",
-    "Het merkteken (stempel of logo) staat half over de rand van de foto."
+    "De stempel staat op elke post, half over de rand van de foto."
   ],
   "postMarks": [
     {
-      "id": "stempel-logo",
-      "label": "Stempel met logo",
-      "logo": "stempel",
-      "inner": "beeldmerk",
-      "innerScale": 0.62,
-      "scale": 1
-    },
-    {
       "id": "stempel",
-      "label": "Alleen stempel",
+      "label": "Stempel",
       "logo": "stempel",
       "scale": 1
-    },
-    {
-      "id": "logo",
-      "label": "Alleen logo",
-      "logo": "beeldmerk",
-      "scale": 0.95
     }
   ]
 }

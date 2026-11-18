@@ -418,3 +418,5 @@ button { font: inherit; cursor: pointer; }
 .g-rules li.no::before { content: "✕"; color: var(--ui-error); }
 .g-all { margin-top: 32px; }
 @media (max-width: 760px) { .view.section { padding: 20px 0 48px; } .nav { flex-direction: row; flex-wrap: wrap; } }
+.foot-row { display: flex; justify-content: space-between; gap: 8px 24px; flex-wrap: wrap; }
+.foot-version { opacity: .8; font-variant-numeric: lining-nums tabular-nums; }

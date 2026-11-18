@@ -286,9 +286,9 @@ function inspectorPost(d: PostDoc) {
     <div class="ins-block"><span class="ins-label">Kleur</span>
       <div class="pills">${B.themes.map((t) => `<button type="button" class="pill theme${t.id === d.theme ? " on" : ""}" data-theme="${t.id}"><i style="background:${color(t.bg).hex}"></i>${esc(t.label)}</button>`).join("")}</div>
     </div>
-    <div class="ins-block"><span class="ins-label">Merkteken</span>
+    ${postMarks().length < 2 ? "" : `<div class="ins-block"><span class="ins-label">Merkteken</span>
       <div class="pills">${postMarks().map((m) => `<button type="button" class="pill${(d.mark ?? postMarks()[0].id) === m.id ? " on" : ""}" data-mark="${m.id}">${esc(m.label)}</button>`).join("")}</div>
-    </div>
+    </div>`}
     <div class="ins-block"><span class="ins-label">Foto</span>
       <label class="btn small ghost">${d.photo ? "Andere foto" : "Foto toevoegen"}<input type="file" accept="image/*" data-act="photo" hidden></label>
       ${d.photo ? `<button type="button" class="link" data-act="nophoto">Foto weghalen</button>` : ""}

@@ -132,8 +132,17 @@ export function guideHtml(studio: string) {
     `<section id="studio" class="view section studio"><div class="wrap"><h1 class="view-title">Maak een post</h1><p class="intro">Vul je tekst in, kies een foto en een variant, en download. Kleuren, letters en logo kloppen altijd.</p><div id="studio-app">${studio}</div></div></section>` +
     guideView() +
     "</main>" +
-    `<footer class="foot"><div class="wrap">${esc(brand.name)} · Studio 2.0</div></footer><div class="toast" role="status" aria-live="polite"></div>`
+    `<footer class="foot"><div class="wrap foot-row"><span>${esc(brand.name)} · Studio 2.0</span><span class="foot-version">${versionLine()}</span></div></footer><div class="toast" role="status" aria-live="polite"></div>`
   );
+}
+
+/** "Gepubliceerd 18 nov 2026 om 15:42 · versie 38c15d9": zo zie je welke versie er staat. */
+function versionLine() {
+  const b = typeof __BUILD__ === "object" ? __BUILD__ : null;
+  if (!b) return "";
+  const when = new Date(b.time).toLocaleString("nl-NL", { timeZone: "Europe/Amsterdam", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  const commit = b.commit ? ` · versie ${esc(b.commit)}${b.dirty ? " + wijzigingen" : ""}` : "";
+  return `Gepubliceerd ${esc(when)}${commit}`;
 }
 
 /** Twee weergaven in één bestand: #stijlgids toont de gids, al het andere de studio. */

@@ -11,7 +11,7 @@ Vier vaste lagen, altijd in deze volgorde:
 1. **Vlak**: één effen achtergrondkleur over het hele canvas. Geen verloop, geen patroon.
 2. **Foto** (optioneel): één rechthoekig blok met rechte hoeken. Nooit full-bleed, er blijft altijd vlak zichtbaar.
 3. **Tekst**: kleine regel boven, kop, subregel, details, call to action. Altijd op het vlak, nooit op de foto.
-4. **Merkteken**: per post te kiezen: stempel met logo, alleen stempel of alleen logo. Half over de rand van de foto.
+4. **Stempel**: op elke post, alleen de ring met "Scouting Vinchem". Half over de rand van de foto.
 
 De studio dwingt dit af: tekst die over de foto of buiten de marge wordt gesleept, maakt de post "Niet on brand" en blokkeert de download.
 
@@ -62,8 +62,8 @@ Met foto toont de studio A, B en C; zonder foto D en E. Varianten die niet passe
 
 ## Merkteken
 
-- Logo en stempel zijn twee losse bestanden. Op een post kies je (`postMarks`): **stempel met logo** (standaard, zoals de oude posts), **alleen stempel** of **alleen logo**.
-- Diameter 210 px (`markSize`), ongeveer 19% van de breedte. Alleen logo: 95% daarvan.
+- Logo (lelie met bruggetje en touw) en stempel (ring met tekst) zijn twee losse elementen. Nooit samengevoegd.
+- Op elke post staat de stempel (`postMarks`: alleen `stempel`). Diameter 210 px (`markSize`), ongeveer 19% van de breedte.
 - Half over een fotorand. Zonder foto in een hoek, binnen de marge.
 - **De lelie nooit los.** Het touw hoort er altijd omheen. (In de oude posts stond de lelie zonder touw; dat doen we niet meer.)
 - Kleur volgt het thema (zie Kleur).
@@ -74,7 +74,7 @@ Nu alleen Instagram 4:5. Volgen (fase 3): story 9:16, vierkant 1:1, header 1,91:
 
 ## Besluiten
 
-- 2026-11-18: logo en stempel los van elkaar; merkteken per post te kiezen. Pagina compact: direct de studio, stijlgids via een link. (Patrick)
+- 2026-11-18: logo en stempel zijn losse elementen, nooit samengevoegd. Op elke post altijd de stempel. Pagina compact: direct de studio, stijlgids via een link. (Patrick)
 - 2026-11-17: crème op blauw alleen voor koppen (3,8:1); kleine tekst op blauw is wit. (Patrick)
 - 2026-11-17: eerste formaat is Instagram 4:5. (Patrick)
 - 2026-11-17: foto's overal met rechte hoeken. (Patrick)
