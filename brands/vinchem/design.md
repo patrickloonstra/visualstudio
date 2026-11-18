@@ -63,7 +63,7 @@ Met foto toont de studio A, B en C; zonder foto D en E. Varianten die niet passe
 ## Merkteken
 
 - Logo (lelie met bruggetje en touw) en stempel (ring met tekst) zijn twee losse elementen. Nooit samengevoegd.
-- Op elke post staat de stempel (`postMarks`: alleen `stempel`). Diameter 210 px (`markSize`), ongeveer 19% van de breedte.
+- Op elke post staat de stempel (`postMarks`: alleen `stempel`). Het logo komt niet op posts; dat is voor drukwerk en de website. Diameter 210 px (`markSize`), ongeveer 19% van de breedte.
 - Half over een fotorand. Zonder foto in een hoek, binnen de marge.
 - **De lelie nooit los.** Het touw hoort er altijd omheen. (In de oude posts stond de lelie zonder touw; dat doen we niet meer.)
 - Kleur volgt het thema (zie Kleur).
@@ -74,7 +74,7 @@ Nu alleen Instagram 4:5. Volgen (fase 3): story 9:16, vierkant 1:1, header 1,91:
 
 ## Besluiten
 
-- 2026-11-18: logo en stempel zijn losse elementen, nooit samengevoegd. Op elke post altijd de stempel. Pagina compact: direct de studio, stijlgids via een link. (Patrick)
+- 2026-11-18: logo en stempel zijn losse elementen, nooit samengevoegd. Op elke post altijd de stempel, het logo komt niet op posts (logo is voor drukwerk en website). Pagina compact: direct de studio, stijlgids via een link. (Patrick)
 - 2026-11-17: crème op blauw alleen voor koppen (3,8:1); kleine tekst op blauw is wit. (Patrick)
 - 2026-11-17: eerste formaat is Instagram 4:5. (Patrick)
 - 2026-11-17: foto's overal met rechte hoeken. (Patrick)
