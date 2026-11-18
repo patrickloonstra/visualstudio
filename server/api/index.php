@@ -114,6 +114,33 @@ function photoUrl(string $brand, string $id, int $v): string {
     return "$api/?action=photo&brand=$brand&id=$id&v=$v";
 }
 
+/** Data-URL in de post wordt een los bestand + link; null wist het bestand; link naar een andere post wordt gekopieerd. */
+function storePhoto(array &$doc, string $key, string $fileId, string $brand, string $dataDir): void {
+    $src = $doc[$key]['src'] ?? null;
+    $fotos = dir_for($dataDir, $brand, 'fotos');
+    if (is_string($src) && str_starts_with($src, 'data:')) {
+        if (!preg_match('#^data:image/(jpeg|png|webp);base64,#', $src)) fail(400, 'Alleen JPG, PNG of WebP.');
+        $bin = base64_decode(substr($src, strpos($src, ',') + 1), true);
+        if ($bin === false || strlen($bin) > MAX_PHOTO) fail(413, 'Foto te groot (max 12 MB).');
+        $mime = (new finfo(FILEINFO_MIME_TYPE))->buffer($bin);
+        if (!in_array($mime, ['image/jpeg', 'image/png', 'image/webp'], true)) fail(400, 'Dit is geen geldige foto.');
+        $ext = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'][$mime];
+        foreach (glob("$fotos/$fileId.*") ?: [] as $old) @unlink($old);
+        write_atomic("$fotos/$fileId.$ext", $bin);
+        $doc[$key]['src'] = photoUrl($brand, $fileId, time());
+    } elseif ($src === null) {
+        foreach (glob("$fotos/$fileId.*") ?: [] as $old) @unlink($old);
+    } elseif (is_string($src) && preg_match('/[?&]id=([a-z0-9-]{4,64})/', $src, $m) && $m[1] !== $fileId) {
+        // Foto van een andere post (bijv. een kopie): bestand meekopiëren.
+        $from = (glob("$fotos/{$m[1]}.*") ?: [])[0] ?? null;
+        if ($from) {
+            foreach (glob("$fotos/$fileId.*") ?: [] as $old) @unlink($old);
+            copy($from, "$fotos/$fileId." . pathinfo($from, PATHINFO_EXTENSION));
+            $doc[$key]['src'] = photoUrl($brand, $fileId, time());
+        }
+    }
+}
+
 $action = (string)($_GET['action'] ?? '');
 $method = $_SERVER['REQUEST_METHOD'];
 if (!is_dir($dataDir)) mkdir($dataDir, 0750, true);
@@ -166,32 +193,9 @@ switch ($action) {
         $doc['brand'] = $brand;
         $doc['updated'] = gmdate('Y-m-d\TH:i:s\Z');
 
-        // Foto als data-URL meegestuurd: opslaan als los bestand en vervangen door een link.
-        $src = $doc['photo']['src'] ?? null;
-        if (is_string($src) && str_starts_with($src, 'data:')) {
-            if (!preg_match('#^data:image/(jpeg|png|webp);base64,#', $src, $m)) fail(400, 'Alleen JPG, PNG of WebP.');
-            $bin = base64_decode(substr($src, strpos($src, ',') + 1), true);
-            if ($bin === false || strlen($bin) > MAX_PHOTO) fail(413, 'Foto te groot (max 12 MB).');
-            $mime = (new finfo(FILEINFO_MIME_TYPE))->buffer($bin);
-            if (!in_array($mime, ['image/jpeg', 'image/png', 'image/webp'], true)) fail(400, 'Dit is geen geldige foto.');
-            $ext = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'][$mime];
-            $fotos = dir_for($dataDir, $brand, 'fotos');
-            foreach (glob("$fotos/$id.*") ?: [] as $old) @unlink($old);
-            write_atomic("$fotos/$id.$ext", $bin);
-            $doc['photo']['src'] = photoUrl($brand, $id, time());
-        } elseif ($src === null) {
-            foreach (glob(dir_for($dataDir, $brand, 'fotos') . "/$id.*") ?: [] as $old) @unlink($old);
-        } elseif (is_string($src) && !str_contains($src, "action=photo&brand=$brand&id=")) {
-            // Foto van een andere post (bijv. een kopie): bestand meekopiëren.
-            if (preg_match('/[?&]id=([a-z0-9-]{4,64})/', $src, $m)) {
-                $fotos = dir_for($dataDir, $brand, 'fotos');
-                $from = (glob("$fotos/{$m[1]}.*") ?: [])[0] ?? null;
-                if ($from) {
-                    copy($from, "$fotos/$id." . pathinfo($from, PATHINFO_EXTENSION));
-                    $doc['photo']['src'] = photoUrl($brand, $id, time());
-                }
-            }
-        }
+        // Foto 1 wordt <id>.jpg, foto 2 wordt <id>-p2.jpg.
+        storePhoto($doc, 'photo', $id, $brand, $dataDir);
+        storePhoto($doc, 'photo2', "$id-p2", $brand, $dataDir);
 
         $json = json_encode($doc, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
         if ($json === false || strlen($json) > MAX_JSON) fail(413, 'Post te groot.');
@@ -206,7 +210,7 @@ switch ($action) {
         $id = (string)(input()['id'] ?? '');
         if (!preg_match(ID_RE, $id)) fail(400, 'Ongeldige post.');
         @unlink(dir_for($dataDir, $brand, 'posts') . "/$id.json");
-        foreach (glob(dir_for($dataDir, $brand, 'fotos') . "/$id.*") ?: [] as $f) @unlink($f);
+        foreach ([...(glob(dir_for($dataDir, $brand, 'fotos') . "/$id.*") ?: []), ...(glob(dir_for($dataDir, $brand, 'fotos') . "/$id-p2.*") ?: [])] as $f) @unlink($f);
         out(200, ['ok' => true]);
     }
 

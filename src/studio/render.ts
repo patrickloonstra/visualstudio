@@ -2,7 +2,7 @@
 import { toPng } from "html-to-image";
 import { brand, color } from "../brand";
 import { logoSvg, markSvg, postMarks } from "../logos";
-import { B, ROLES, allowedColors, defaultColor, fmt, layoutOf, px, themeOf, wordCount, type PostDoc, type Role } from "./model";
+import { B, ROLES, allowedColors, defaultColor, fmt, layoutOf, px, themeOf, wordCount, type Box, type PostDoc, type Role } from "./model";
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 
@@ -12,14 +12,15 @@ export function postHtml(d: PostDoc, opts: { editable?: boolean } = {}) {
   const t = themeOf(d);
   const s = f.markSize;
   const ms = s * ((postMarks().find((m) => m.id === d.mark) ?? postMarks()[0]).scale ?? 1);
-  let photo = "";
-  if (L.photo) {
-    const p = L.photo;
-    const box = `left:${p.x}px;top:${p.y}px;width:${p.w}px;height:${p.h}px`;
-    photo = d.photo
-      ? `<div class="p-photo" data-role="photo" style="${box}"><img src="${d.photo.src}" alt="" draggable="false" style="object-position:${d.photo.x}% ${d.photo.y}%;transform:scale(${d.photo.zoom});transform-origin:${d.photo.x}% ${d.photo.y}%"></div>`
-      : `<div class="p-photo p-empty" data-role="photo" style="${box};color:${color(t.text).hex}"><span>Jouw foto</span></div>`;
-  }
+  // Foto 1 (groot) en eventueel foto 2 (klein, half over de grote, met een rand in de achtergrondkleur).
+  const photoBox = (p: Box | null | undefined, ph: PostDoc["photo"], role: "photo" | "photo2", label: string, frame = 0) => {
+    if (!p) return "";
+    const box = `left:${p.x - frame}px;top:${p.y - frame}px;width:${p.w + 2 * frame}px;height:${p.h + 2 * frame}px;${frame ? `border:${frame}px solid ${color(t.bg).hex};` : ""}`;
+    return ph
+      ? `<div class="p-photo" data-role="${role}" style="${box}"><img src="${ph.src}" alt="" draggable="false" style="object-position:${ph.x}% ${ph.y}%;transform:scale(${ph.zoom});transform-origin:${ph.x}% ${ph.y}%"></div>`
+      : `<div class="p-photo p-empty" data-role="${role}" style="${box};color:${color(t.text).hex}"><span>${label}</span></div>`;
+  };
+  const photo = photoBox(L.photo, d.photo, "photo", L.photo2 ? "Foto 1" : "Jouw foto") + photoBox(L.photo2, d.photo2 ?? null, "photo2", "Foto 2", f.photo2Frame ?? 0);
   const tb = L.text;
   const pos = tb.anchor === "bottom" ? `bottom:${f.h - tb.y - tb.h}px` : `top:${tb.y}px`;
   const els = ROLES.filter((r) => d.fields[r]?.trim())
@@ -94,7 +95,7 @@ export function fit(post: HTMLElement, d: PostDoc): boolean {
   return false;
 }
 
-export type Issue = { role?: Role | "photo"; msg: string };
+export type Issue = { role?: Role | "photo" | "photo2"; msg: string };
 
 /** Alle merkregels die de post schendt. Leeg = on brand. Werkt op een gerenderde (en gefitte) post. */
 export function check(post: HTMLElement, d: PostDoc, fitted: boolean): Issue[] {
@@ -120,14 +121,13 @@ export function check(post: HTMLElement, d: PostDoc, fitted: boolean): Issue[] {
   };
   const logoEl = post.querySelector(".p-logo");
   const lg = logoEl ? rel(logoEl) : null;
-  const photoEl = post.querySelector(".p-photo");
-  const ph = photoEl ? rel(photoEl) : null;
+  const photos = [...post.querySelectorAll(".p-photo")].map(rel);
   post.querySelectorAll<HTMLElement>(".p-el").forEach((e) => {
     const r = e.dataset.role as Role;
     const b = rel(e);
     const m = f.margin - 1;
     if (b.x < m || b.y < m || b.x + b.w > f.w - m || b.y + b.h > f.h - m) issues.push({ role: r, msg: `${B.styles[r].label} komt buiten de marge.` });
-    if (ph && b.x < ph.x + ph.w && b.x + b.w > ph.x && b.y < ph.y + ph.h && b.y + b.h > ph.y)
+    if (photos.some((ph) => b.x < ph.x + ph.w && b.x + b.w > ph.x && b.y < ph.y + ph.h && b.y + b.h > ph.y))
       issues.push({ role: r, msg: `${B.styles[r].label} staat op de foto. Tekst hoort op het vlak.` });
     if (lg && b.x < lg.x + lg.w && b.x + b.w > lg.x && b.y < lg.y + lg.h && b.y + b.h > lg.y)
       issues.push({ role: r, msg: `${B.styles[r].label} staat over het logo. Het logo heeft vrije ruimte nodig.` });

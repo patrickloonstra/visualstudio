@@ -9,8 +9,10 @@ export type Layout = {
   mark: { cx: number; cy: number; edge?: "top" | "bottom" | "left" | "right" };
   /** Linkerbovenhoek van het officiële logo. */
   logo?: { x: number; y: number };
+  /** Tweede, kleinere foto die half over de grote valt. Layouts met photo2 zijn er alleen voor posts met twee foto's. */
+  photo2?: Box | null;
 };
-export type Format = { id: string; label: string; w: number; h: number; margin: number; markSize: number; logoSize?: number; layouts: Layout[] };
+export type Format = { id: string; label: string; w: number; h: number; margin: number; markSize: number; logoSize?: number; photo2Frame?: number; layouts: Layout[] };
 export type Theme = { id: string; label: string; bg: string; head: string; text: string; mark: string; primary?: boolean };
 export type Role = "kicker" | "head" | "sub" | "details" | "cta";
 export type Style = {
@@ -33,6 +35,8 @@ export type PostDoc = {
   fields: Fields;
   /** data-URL (studio) of pad naast post.json (script). */
   photo: { src: string; x: number; y: number; zoom: number } | null;
+  /** Tweede foto (klein). */
+  photo2?: { src: string; x: number; y: number; zoom: number } | null;
   overrides: Partial<Record<Role | "block", ElementOverride>>;
   /** Merkteken op de post (id uit brand.json > postMarks). Leeg = het eerste. */
   mark?: string;
@@ -114,10 +118,19 @@ function shuffle<T>(arr: T[]) {
   return arr.map((v) => [Math.random(), v] as const).sort((x, y) => x[0] - y[0]).map(([, v]) => v);
 }
 
+/** Layouts die passen bij het aantal foto's: geen, één, of twee (groot + klein). */
+export function layoutsFor(d: Pick<PostDoc, "format" | "photo" | "photo2">) {
+  const all = fmt(d.format).layouts;
+  const two = all.filter((l) => l.photo && l.photo2);
+  if (d.photo && d.photo2 && two.length) return two;
+  if (d.photo) return all.filter((l) => l.photo && !l.photo2);
+  return all.filter((l) => !l.photo);
+}
+
 /** Kandidaat-varianten: elke passende layout in elk thema, primaire kleur vooraan. De studio toont de eerste zes die passen. */
 export function makeVariants(base: PostDoc, keepLayouts?: string[]): PostDoc[] {
   const f = fmt(base.format);
-  const pool = f.layouts.filter((l) => (base.photo ? !!l.photo : !l.photo)).map((l) => l.id);
+  const pool = layoutsFor(base).map((l) => l.id);
   const primary = B.themes.find((t) => t.primary) ?? B.themes[0];
   const others = shuffle(B.themes.filter((t) => t !== primary));
   const make = (layout: string, theme: string) => ({ ...structuredClone(base), layout, theme, overrides: {}, ...rollMark() });

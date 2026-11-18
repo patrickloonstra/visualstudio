@@ -61,6 +61,16 @@ Posities in px op 1080 × 1350.
 
 Met foto toont de studio A, B en C; zonder foto D en E. Varianten die niet passen (tekst te lang voor het tekstvak) laat de studio weg.
 
+## Twee foto's
+
+Upload je twee foto's, dan toont de studio alleen deze layouts (groot + klein, de kleine half over de grote, met een rand van 12 px in de achtergrondkleur):
+
+| Layout | Foto 1 (groot) | Foto 2 (klein) | Logo | Stempel over |
+|---|---|---|---|---|
+| F. Twee foto's boven | 290, 40, 750, 760 | 110, 540, 300, 380 | linksboven | onderrand foto 1 |
+| G. Twee foto's rechts | 500, 40, 540, 1080 | 330, 720, 300, 380 | linksboven | onderrand foto 1 |
+| H. Tekst boven, twee foto's | 150, 340, 640, 900 | 600, 870, 360, 430 | rechtsboven | linkerrand foto 1 |
+
 ## Merkteken
 
 - Logo (lelie met bruggetje en touw) en stempel (ring met tekst) zijn twee losse elementen. Nooit samengevoegd.
@@ -74,6 +84,8 @@ Met foto toont de studio A, B en C; zonder foto D en E. Varianten die niet passe
 Nu alleen Instagram 4:5. Volgen (fase 3): story 9:16, vierkant 1:1, header 1,91:1, poster A4 (PDF).
 
 ## Besluiten
+
+- 2026-11-18: posts met twee foto's: groot + klein, stempel over de rand van de grote foto. Briefing heeft twee uploadvelden. (Patrick)
 
 - 2026-11-18: op elke post het officiële logo in een vrije hoek (studio kiest per layout: A, C, D, E linksboven; B rechtsboven). Stempel voor 1/3 of 2/3 over de foto (willekeurig) en af en toe 30° of 60° gedraaid; "Stempel anders" kiest een nieuwe stand. Kleine regel boven: datumkiezer ("Zaterdag 21 juni") en vaste woorden. (Patrick)
 

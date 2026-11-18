@@ -1,7 +1,7 @@
 // Studio-interface: briefing, varianten, editor met inspectiepaneel, Mijn posts.
 import { brand, color } from "../brand";
 import {
-  B, ROLES, allowedColors, defaultColor, enforce, fmt, layoutOf, makeVariants, newDoc, rollMark, splitPasted, stepLabel, themeOf, wordCount,
+  B, ROLES, allowedColors, defaultColor, enforce, fmt, layoutOf, layoutsFor, makeVariants, newDoc, rollMark, splitPasted, stepLabel, themeOf, wordCount,
   type PostDoc, type Role,
 } from "./model";
 import { check, fileSlug, fit, postHtml, renderPng, type Issue } from "./render";
@@ -12,7 +12,9 @@ const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&l
 const $ = <T extends HTMLElement = HTMLElement>(sel: string, root: ParentNode = document) => root.querySelector<T>(sel)!;
 const ALIGN = ((brand as unknown as { align?: string[] }).align ?? ["left"]) as ("left" | "center" | "right")[];
 
-type Sel = Role | "photo" | null;
+type Sel = Role | "photo" | "photo2" | null;
+type PhotoKey = "photo" | "photo2";
+const isPhoto = (x: unknown): x is PhotoKey => x === "photo" || x === "photo2";
 const S = {
   doc: null as PostDoc | null,
   variants: [] as PostDoc[],
@@ -50,10 +52,12 @@ function persist() {
   saveTimer = window.setTimeout(async () => {
     if (!S.doc) return;
     const sent = S.doc.photo?.src;
+    const sent2 = S.doc.photo2?.src;
     try {
       const saved = await savePost(structuredClone(S.doc));
       // Op de server wordt een geüploade foto een link: die overnemen, dan gaat hij maar één keer mee.
       if (S.doc?.id === saved.id && S.doc.photo && saved.photo && S.doc.photo.src === sent) S.doc.photo.src = saved.photo.src;
+      if (S.doc?.id === saved.id && S.doc.photo2 && saved.photo2 && S.doc.photo2.src === sent2) S.doc.photo2.src = saved.photo2.src;
       $(".st-saved").textContent = `Bewaard ${new Date().toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}`;
     } catch (err) {
       toast(err instanceof Error ? `Niet opgeslagen: ${err.message}` : "Niet opgeslagen.");
@@ -178,7 +182,10 @@ export function studioHtml() {
           <button type="button" class="btn small ghost" data-act="split">Verdeel over de velden</button>
         </details>
         ${field("kicker")}${field("head")}${field("sub")}${field("details", true)}${field("cta")}
-        <label>Jouw foto <small>(optioneel)</small><input type="file" name="photo" accept="image/*"></label>
+        <div class="brief-grid">
+          <label>Foto 1 <small>(groot, optioneel)</small><input type="file" name="photo" accept="image/*"></label>
+          <label>Foto 2 <small>(klein, optioneel)</small><input type="file" name="photo2" accept="image/*"></label>
+        </div>
         <p class="brief-warn" role="alert"></p>
         <div class="brief-actions">
           <button type="button" class="btn small dark" data-act="layout">Leg het op</button>
@@ -192,6 +199,7 @@ export function studioHtml() {
 
 // ---------- Briefing ----------
 let briefPhoto: PostDoc["photo"] = null;
+let briefPhoto2: PostDoc["photo"] = null;
 
 function fillBrief(d: PostDoc | null) {
   const form = $<HTMLFormElement>(".brief-form");
@@ -201,6 +209,7 @@ function fillBrief(d: PostDoc | null) {
   ROLES.forEach((r) => ((form.elements.namedItem(r) as HTMLInputElement).value = d ? src.fields[r] : ""));
   ROLES.forEach((r) => ((form.elements.namedItem(r) as HTMLInputElement).placeholder = newDoc(src.type).fields[r] || ""));
   briefPhoto = d?.photo ?? null;
+  briefPhoto2 = d?.photo2 ?? null;
   $(".brief-warn").textContent = "";
 }
 
@@ -222,6 +231,9 @@ function readBrief(): PostDoc {
   d.format = v("format");
   ROLES.forEach((r) => (d.fields[r] = enforce(r, v(r).trim())));
   d.photo = briefPhoto ? { ...briefPhoto } : null;
+  // Alleen foto 2 gekozen? Dan wordt die de grote foto.
+  if (!d.photo && briefPhoto2) d.photo = { ...briefPhoto2 };
+  else d.photo2 = briefPhoto2 ? { ...briefPhoto2 } : null;
   if (briefMode === "edit" && S.doc) {
     // Aanpassen: dezelfde post bijwerken. Nieuw: nieuw id, de vorige post blijft staan.
     d.id = S.doc.id;
@@ -327,7 +339,8 @@ function update(mut: (d: PostDoc) => void, opts: { history?: boolean; inspector?
 
 function inspectorPost(d: PostDoc) {
   const f = fmt(d.format);
-  const pool = f.layouts.filter((l) => (d.photo ? !!l.photo : !l.photo));
+  const pool = layoutsFor(d);
+  void f;
   return `<h4>Post</h4>
     <p class="ins-tip">Klik op een tekst of de foto om hem aan te passen.</p>
     <div class="ins-block"><span class="ins-label">Layout</span>
@@ -343,19 +356,22 @@ function inspectorPost(d: PostDoc) {
       <div><button type="button" class="btn small ghost" data-act="remark">Stempel anders</button></div>
       <p class="ins-note">Kiest een nieuwe stand: meer of minder over de foto, recht of gedraaid.</p>
     </div>` : ""}
-    <div class="ins-block"><span class="ins-label">Foto</span>
-      <label class="btn small ghost">${d.photo ? "Andere foto" : "Foto toevoegen"}<input type="file" accept="image/*" data-act="photo" hidden></label>
-      ${d.photo ? `<button type="button" class="link" data-act="nophoto">Foto weghalen</button>` : ""}
+    <div class="ins-block"><span class="ins-label">Foto's</span>
+      <label class="btn small ghost">${d.photo ? "Andere foto 1" : "Foto toevoegen"}<input type="file" accept="image/*" data-act="photo" hidden></label>
+      ${d.photo ? `<label class="btn small ghost">${d.photo2 ? "Andere foto 2" : "Tweede foto toevoegen"}<input type="file" accept="image/*" data-act="photo2" hidden></label>` : ""}
+      ${d.photo2 ? `<button type="button" class="link" data-act="nophoto2">Foto 2 weghalen</button>` : ""}
+      ${d.photo ? `<button type="button" class="link" data-act="nophoto">Alle foto's weghalen</button>` : ""}
     </div>
     <div class="ins-block"><button type="button" class="link" data-act="reset">Alles terug naar standaard</button></div>`;
 }
 
-function inspectorPhoto(d: PostDoc) {
-  if (!d.photo) return inspectorPost(d);
-  return `<h4>Foto</h4>
+function inspectorPhoto(d: PostDoc, key: PhotoKey) {
+  const ph = d[key];
+  if (!ph) return inspectorPost(d);
+  return `<h4>${layoutOf(d).photo2 ? (key === "photo" ? "Foto 1" : "Foto 2") : "Foto"}</h4>
     <p class="ins-tip">Sleep in de foto om hem te verschuiven binnen zijn kader.</p>
-    <label class="ins-block"><span class="ins-label">Inzoomen</span><input type="range" min="1" max="2.5" step="0.05" value="${d.photo.zoom}" data-act="zoom"></label>
-    <div class="ins-block"><label class="btn small ghost">Andere foto<input type="file" accept="image/*" data-act="photo" hidden></label>
+    <label class="ins-block"><span class="ins-label">Inzoomen</span><input type="range" min="1" max="2.5" step="0.05" value="${ph.zoom}" data-act="zoom"></label>
+    <div class="ins-block"><label class="btn small ghost">Andere foto<input type="file" accept="image/*" data-act="${key}" hidden></label>
       <button type="button" class="link" data-act="photoreset">Midden</button></div>
     <div class="ins-block"><button type="button" class="link" data-act="deselect">Terug naar post</button></div>`;
 }
@@ -400,7 +416,7 @@ function inspectorText(d: PostDoc, r: Role) {
 function renderInspector() {
   const d = S.doc!;
   const ins = $(".st-inspector");
-  ins.innerHTML = S.sel === "photo" ? inspectorPhoto(d) : S.sel ? inspectorText(d, S.sel) : inspectorPost(d);
+  ins.innerHTML = isPhoto(S.sel) ? inspectorPhoto(d, S.sel) : S.sel ? inspectorText(d, S.sel) : inspectorPost(d);
 }
 
 function select(sel: Sel) {
@@ -419,9 +435,10 @@ function wireCanvas() {
     const role = (target?.dataset.role ?? null) as Sel;
     if (!S.doc || !view) return;
     if (role !== S.sel) select(role);
-    if (!role || (role === "photo" && !S.doc.photo)) return;
-    const o = role === "photo" ? {} : S.doc.overrides[role] ?? {};
-    drag = { role, x: e.clientX, y: e.clientY, start: { dx: o.dx ?? 0, dy: o.dy ?? 0, px: S.doc.photo?.x ?? 50, py: S.doc.photo?.y ?? 50 }, moved: false };
+    if (!role || (isPhoto(role) && !S.doc[role])) return;
+    const o = isPhoto(role) ? {} : S.doc.overrides[role] ?? {};
+    const ph = isPhoto(role) ? S.doc[role] : null;
+    drag = { role, x: e.clientX, y: e.clientY, start: { dx: o.dx ?? 0, dy: o.dy ?? 0, px: ph?.x ?? 50, py: ph?.y ?? 50 }, moved: false };
     canvas.setPointerCapture(e.pointerId);
     e.preventDefault();
   });
@@ -433,14 +450,15 @@ function wireCanvas() {
     if (Math.abs(dx) + Math.abs(dy) > 2) drag.moved = true;
     if (!drag.moved) return;
     const d = S.doc;
-    if (drag.role === "photo" && d.photo) {
-      const L = layoutOf(d).photo!;
-      d.photo.x = Math.max(0, Math.min(100, drag.start.px - (dx / L.w) * 100));
-      d.photo.y = Math.max(0, Math.min(100, drag.start.py - (dy / L.h) * 100));
-      const img = view.post.querySelector<HTMLImageElement>(".p-photo img")!;
-      img.style.objectPosition = `${d.photo.x}% ${d.photo.y}%`;
-      img.style.transformOrigin = `${d.photo.x}% ${d.photo.y}%`;
-    } else if (drag.role && drag.role !== "photo") {
+    if (isPhoto(drag.role) && d[drag.role]) {
+      const ph = d[drag.role]!;
+      const L = layoutOf(d)[drag.role]!;
+      ph.x = Math.max(0, Math.min(100, drag.start.px - (dx / L.w) * 100));
+      ph.y = Math.max(0, Math.min(100, drag.start.py - (dy / L.h) * 100));
+      const img = view.post.querySelector<HTMLImageElement>(`[data-role="${drag.role}"] img`)!;
+      img.style.objectPosition = `${ph.x}% ${ph.y}%`;
+      img.style.transformOrigin = `${ph.x}% ${ph.y}%`;
+    } else if (drag.role && !isPhoto(drag.role)) {
       const o = (d.overrides[drag.role] ??= {});
       o.dx = Math.round(drag.start.dx + dx);
       o.dy = Math.round(drag.start.dy + dy);
@@ -572,6 +590,7 @@ export function mountStudio(root: HTMLElement) {
     if (act === "blank") {
       // Alleen de velden leegmaken. Bewaarde posts blijven staan.
       briefPhoto = null;
+      briefPhoto2 = null;
       fillBrief(null);
       $<HTMLInputElement>(".brief-form input[name=photo]").value = "";
       return;
@@ -651,10 +670,11 @@ export function mountStudio(root: HTMLElement) {
     if (el.dataset.layout) return update((x) => ((x.layout = el.dataset.layout!), (x.overrides = {})), { inspector: true });
     if (el.dataset.theme) return update((x) => ((x.theme = el.dataset.theme!), ROLES.forEach((r) => delete x.overrides[r]?.color)), { inspector: true });
     if (act === "reset") return update((x) => (x.overrides = {}), { inspector: true });
-    if (act === "nophoto") return update((x) => ((x.photo = null), (x.layout = fmt(x.format).layouts.find((l) => !l.photo)!.id), (x.overrides = {})), { inspector: true });
-    if (act === "photoreset") return update((x) => x.photo && Object.assign(x.photo, { x: 50, y: 50, zoom: 1 }), { inspector: true });
+    if (act === "nophoto") return update((x) => ((x.photo = null), (x.photo2 = null), (x.layout = layoutsFor(x)[0].id), (x.overrides = {})), { inspector: true });
+    if (act === "nophoto2") return update((x) => ((x.photo2 = null), (x.layout = layoutsFor(x)[0].id), (x.overrides = {})), { inspector: true });
+    if (act === "photoreset") return update((x) => { const k = isPhoto(S.sel) ? S.sel : "photo"; if (x[k]) Object.assign(x[k]!, { x: 50, y: 50, zoom: 1 }); }, { inspector: true });
     const r = S.sel as Role;
-    if (!r || r === ("photo" as Role)) return;
+    if (!r || isPhoto(r)) return;
     if (el.dataset.size !== undefined) return update((x) => ((x.overrides[r] ??= {}).size = el.dataset.size || undefined), { inspector: true });
     if (el.dataset.color) return update((x) => ((x.overrides[r] ??= {}).color = el.dataset.color), { inspector: true });
     if (el.dataset.align) return update((x) => ((x.overrides[r] ??= {}).align = el.dataset.align as "left"), { inspector: true });
@@ -664,7 +684,7 @@ export function mountStudio(root: HTMLElement) {
   root.addEventListener("input", (e) => {
     const t = e.target as HTMLInputElement;
     if (!S.doc) return;
-    if (t.dataset.act === "text" && S.sel && S.sel !== "photo") {
+    if (t.dataset.act === "text" && S.sel && !isPhoto(S.sel)) {
       const r = S.sel;
       const fixed = enforce(r, t.value);
       if (fixed !== t.value) t.value = fixed;
@@ -674,7 +694,10 @@ export function mountStudio(root: HTMLElement) {
       cnt.textContent = `${n} van ${B.styles[r].maxWords} woorden`;
       cnt.classList.toggle("over", n > B.styles[r].maxWords);
     }
-    if (t.dataset.act === "zoom") update((x) => x.photo && (x.photo.zoom = Number(t.value)), { history: false });
+    if (t.dataset.act === "zoom") {
+      const k: PhotoKey = isPhoto(S.sel) ? S.sel : "photo";
+      update((x) => x[k] && (x[k]!.zoom = Number(t.value)), { history: false });
+    }
   });
   // Klik op "Datum kiezen" opent direct de kalender.
   root.addEventListener("click", (e) => {
@@ -697,14 +720,20 @@ export function mountStudio(root: HTMLElement) {
       return;
     }
     if (t.dataset.act === "text" || t.dataset.act === "zoom") snapshot();
-    if (t.dataset.act === "photo" && t.files?.[0]) {
+    if (isPhoto(t.dataset.act) && t.files?.[0]) {
+      const key = t.dataset.act;
       const src = await readPhoto(t.files[0]);
       update((x) => {
-        x.photo = { src, x: 50, y: 50, zoom: 1 };
-        if (!layoutOf(x).photo) x.layout = fmt(x.format).layouts.find((l) => l.photo)!.id;
+        x[key] = { src, x: 50, y: 50, zoom: 1 };
+        // Past de layout niet meer bij het aantal foto's? Dan de eerste die wel past.
+        if (!layoutsFor(x).some((l) => l.id === x.layout)) x.layout = layoutsFor(x)[0].id;
       }, { inspector: true });
     }
-    if (t.name === "photo" && t.closest(".brief-form") && t.files?.[0]) briefPhoto = { src: await readPhoto(t.files[0]), x: 50, y: 50, zoom: 1 };
+    if (t.closest(".brief-form") && t.files?.[0] && (t.name === "photo" || t.name === "photo2")) {
+      const ph = { src: await readPhoto(t.files[0]), x: 50, y: 50, zoom: 1 };
+      if (t.name === "photo") briefPhoto = ph;
+      else briefPhoto2 = ph;
+    }
     if (t.dataset.act === "import" && t.files?.[0]) {
       try {
         const n = await importFile(t.files[0]);

@@ -26,7 +26,7 @@ const { chromium } = createRequire(import.meta.url)("playwright") as {
   chromium: { launch(): Promise<{ newPage(): Promise<Page>; close(): Promise<void> }> };
 };
 type Rendered = { doc: { layout: string; theme: string }; png: string; issues: { msg: string }[] };
-type Input = { type: string; format?: string; mark?: string; fields: Record<string, string>; photo?: string; photoPos?: object; layout?: string; theme?: string };
+type Input = { type: string; format?: string; mark?: string; photo2?: string; fields: Record<string, string>; photo?: string; photoPos?: object; layout?: string; theme?: string };
 
 const dir = resolve(process.argv[2] ?? "");
 const brand = process.env.BRAND ?? dir.split("/brands/")[1]?.split("/")[0] ?? "vinchem";
@@ -40,6 +40,10 @@ const photo = input.photo
   ? `data:${mime[extname(input.photo).toLowerCase()] ?? "image/jpeg"};base64,${readFileSync(join(dir, input.photo)).toString("base64")}`
   : null;
 
+const photo2 = input.photo2
+  ? `data:${mime[extname(input.photo2).toLowerCase()] ?? "image/jpeg"};base64,${readFileSync(join(dir, input.photo2)).toString("base64")}`
+  : null;
+
 const browser = await chromium.launch();
 const page = await browser.newPage();
 const errors: string[] = [];
@@ -48,12 +52,13 @@ await page.goto("file://" + html);
 await page.waitForFunction(() => !!window.merkstudio);
 
 const result: Rendered[] = await page.evaluate(
-  async ({ input, photo }: { input: Input; photo: string | null }) => {
+  async ({ input, photo, photo2 }: { input: Input; photo: string | null; photo2: string | null }) => {
     const ms = window.merkstudio;
     const base = ms.newDoc(input.type, input.fields);
     if (input.format) base.format = input.format;
     if (input.mark) base.mark = input.mark;
     base.photo = photo ? { src: photo, x: 50, y: 50, zoom: 1, ...input.photoPos } : null;
+    base.photo2 = photo2 ? { src: photo2, x: 50, y: 50, zoom: 1 } : null;
     const candidates = input.layout ? [{ ...base, layout: input.layout, theme: input.theme ?? base.theme }] : ms.variants(base);
     const out: Rendered[] = [];
     for (const doc of candidates) {
@@ -63,7 +68,7 @@ const result: Rendered[] = await page.evaluate(
     }
     return out;
   },
-  { input, photo },
+  { input, photo, photo2 },
 );
 await browser.close();
 if (errors.length) console.error(errors.join("\n"));

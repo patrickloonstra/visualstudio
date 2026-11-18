@@ -125,15 +125,21 @@ export async function deletePost(id: string) {
 type FileShape = { app: "merkstudio"; brand: string; exported: string; posts: PostDoc[] };
 
 /** Foto-links (server) omzetten naar ingebedde data, zodat het bestand overal werkt. */
-async function inline(p: PostDoc): Promise<PostDoc> {
-  if (!p.photo || p.photo.src.startsWith("data:")) return p;
-  const blob = await (await fetch(new URL(p.photo.src, location.href), { credentials: "same-origin" })).blob();
-  const src = await new Promise<string>((resolve) => {
+async function toData(src: string) {
+  if (src.startsWith("data:")) return src;
+  const blob = await (await fetch(new URL(src, location.href), { credentials: "same-origin" })).blob();
+  return new Promise<string>((resolve) => {
     const r = new FileReader();
     r.onload = () => resolve(String(r.result));
     r.readAsDataURL(blob);
   });
-  return { ...p, photo: { ...p.photo, src } };
+}
+
+async function inline(p: PostDoc): Promise<PostDoc> {
+  const out = { ...p };
+  if (p.photo) out.photo = { ...p.photo, src: await toData(p.photo.src) };
+  if (p.photo2) out.photo2 = { ...p.photo2, src: await toData(p.photo2.src) };
+  return out;
 }
 
 export async function downloadFile(posts: PostDoc[], name = `${BRAND}-posts`) {
@@ -154,6 +160,7 @@ export async function importFile(file: File): Promise<number> {
   for (const p of posts) {
     if (!p.id || !p.fields) continue;
     if (p.photo && !p.photo.src.startsWith("data:")) p.photo = null; // losse link werkt niet buiten de oorspronkelijke plek
+    if (p.photo2 && !p.photo2.src.startsWith("data:")) p.photo2 = null;
     await savePost(p);
     n++;
   }
