@@ -420,3 +420,5 @@ button { font: inherit; cursor: pointer; }
 @media (max-width: 760px) { .view.section { padding: 20px 0 48px; } .nav { flex-direction: row; flex-wrap: wrap; } }
 .foot-row { display: flex; justify-content: space-between; gap: 8px 24px; flex-wrap: wrap; }
 .foot-version { opacity: .8; font-variant-numeric: lining-nums tabular-nums; }
+.st-saved { font-size: 14px; opacity: .7; }
+.st-bar [hidden] { display: none; }

@@ -54,6 +54,7 @@ function persist() {
       const saved = await savePost(structuredClone(S.doc));
       // Op de server wordt een geüploade foto een link: die overnemen, dan gaat hij maar één keer mee.
       if (S.doc?.id === saved.id && S.doc.photo && saved.photo && S.doc.photo.src === sent) S.doc.photo.src = saved.photo.src;
+      $(".st-saved").textContent = `Bewaard ${new Date().toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}`;
     } catch (err) {
       toast(err instanceof Error ? `Niet opgeslagen: ${err.message}` : "Niet opgeslagen.");
       if (storage.mode === "server" && !storage.loggedIn) showLogin();
@@ -82,15 +83,17 @@ export function studioHtml() {
   };
   return `<div class="studio-app">
     <div class="st-bar">
-      <button type="button" class="btn small" data-act="brief">Ik heb een post nodig over…</button>
+      <button type="button" class="btn small" data-act="brief">Nieuwe post</button>
+      <button type="button" class="btn small ghost" data-act="rebrief" hidden>Tekst en foto aanpassen</button>
       <button type="button" class="btn small ghost" data-act="undo" disabled>Ongedaan maken</button>
       <span class="st-badge" hidden></span>
+      <span class="st-saved" aria-live="polite"></span>
       <span class="st-spacer"></span>
       <button type="button" class="btn small" data-act="png" disabled>Download PNG</button>
     </div>
 
     <div class="st-empty">
-      <p>Nog geen post open. Begin met <strong>Ik heb een post nodig over…</strong> of open er een uit <strong>Mijn posts</strong>.</p>
+      <p>Nog geen post open. Klik op <strong>Nieuwe post</strong>, of kies <strong>Bewerken</strong> bij een post in <strong>Mijn posts</strong>.</p>
     </div>
 
     <div class="st-work" hidden>
@@ -146,7 +149,7 @@ export function studioHtml() {
         <div class="brief-actions">
           <button type="button" class="btn small dark" data-act="layout">Leg het op</button>
           <button type="button" class="btn small ghost" data-act="shuffle-brief">Kleuren schudden</button>
-          <button type="button" class="btn small ghost" data-act="blank">Leeg beginnen</button>
+          <button type="button" class="btn small ghost" data-act="blank">Velden leegmaken</button>
         </div>
       </form>
     </dialog>
@@ -167,9 +170,14 @@ function fillBrief(d: PostDoc | null) {
   $(".brief-warn").textContent = "";
 }
 
-export function openBriefing() {
+/** "new": altijd een nieuwe post (de open post blijft bewaard). "edit": de open post aanpassen. */
+let briefMode: "new" | "edit" = "new";
+
+export function openBriefing(mode: "new" | "edit" = "new") {
+  briefMode = mode === "edit" && S.doc ? "edit" : "new";
   document.querySelector("#studio")?.scrollIntoView({ behavior: "smooth" });
-  fillBrief(S.doc);
+  fillBrief(briefMode === "edit" ? S.doc : null);
+  $("#brief-title").textContent = briefMode === "edit" ? "Post aanpassen" : "Waar gaat de post over?";
   $<HTMLDialogElement>(".st-brief").showModal();
 }
 
@@ -180,7 +188,12 @@ function readBrief(): PostDoc {
   d.format = v("format");
   ROLES.forEach((r) => (d.fields[r] = enforce(r, v(r).trim())));
   d.photo = briefPhoto ? { ...briefPhoto } : null;
-  if (S.doc) d.id = S.doc.id; // briefing opnieuw = dezelfde post bijwerken
+  if (briefMode === "edit" && S.doc) {
+    // Aanpassen: dezelfde post bijwerken. Nieuw: nieuw id, de vorige post blijft staan.
+    d.id = S.doc.id;
+    d.created = S.doc.created;
+    d.mark = S.doc.mark;
+  }
   return d;
 }
 
@@ -235,6 +248,7 @@ function pickVariant(i: number) {
   snapshot();
   persist();
   renderEditor();
+  toast(briefMode === "edit" ? "Post aangepast. Hij staat in Mijn posts." : "Nieuwe post bewaard in Mijn posts.");
 }
 
 // ---------- Editor ----------
@@ -261,6 +275,8 @@ function renderEditor() {
   const has = !!S.doc;
   $(".st-work").hidden = !has;
   $(".st-empty").hidden = has;
+  $("[data-act=rebrief]").hidden = !has;
+  if (!has) $(".st-saved").textContent = "";
   if (!has) return;
   renderCanvas();
   renderInspector();
@@ -425,7 +441,7 @@ async function renderLibrary() {
             <button type="button" class="st-thumb-btn" data-open="${p.id}" aria-label="Open ${esc(p.fields.head)}"><div class="st-thumb"></div></button>
             <p class="t">${esc(p.fields.head || "Zonder kop")}</p>
             <p class="m">${new Date(p.updated).toLocaleString("nl-NL", { dateStyle: "medium", timeStyle: "short" })}</p>
-            <div class="a"><button type="button" class="link" data-open="${p.id}">Openen</button><button type="button" class="link" data-copy="${p.id}">Kopie</button><button type="button" class="link danger" data-del="${p.id}">Verwijder</button></div>
+            <div class="a"><button type="button" class="link" data-open="${p.id}">Bewerken</button><button type="button" class="link" data-copy="${p.id}">Kopie maken</button><button type="button" class="link danger" data-del="${p.id}">Verwijderen</button></div>
           </article>`,
         )
         .join("")
@@ -480,14 +496,15 @@ export function mountStudio(root: HTMLElement) {
     if (!el || (el as HTMLButtonElement).disabled) return;
     const act = el.dataset.act;
     const d = S.doc;
-    if (act === "brief") return openBriefing();
+    if (act === "brief") return openBriefing("new");
+    if (act === "rebrief") return openBriefing("edit");
     if (act === "close") return dialog.close();
     if (act === "layout") return layOut();
     if (act === "blank") {
-      S.doc = null;
+      // Alleen de velden leegmaken. Bewaarde posts blijven staan.
       briefPhoto = null;
       fillBrief(null);
-      renderEditor();
+      $<HTMLInputElement>(".brief-form input[name=photo]").value = "";
       return;
     }
     if (act === "split") {
@@ -534,7 +551,9 @@ export function mountStudio(root: HTMLElement) {
       const p = structuredClone(cache.find((x) => x.id === el.dataset.copy)!);
       p.id = newDoc().id;
       p.created = new Date().toISOString();
-      return openPost(await savePost(p));
+      const saved = await savePost(p);
+      toast("Kopie gemaakt. Je bewerkt nu de kopie, het origineel blijft staan.");
+      return openPost(saved);
     }
     if (el.dataset.del) {
       if (!confirm("Deze post verwijderen? Dit kan niet ongedaan worden.")) return;
