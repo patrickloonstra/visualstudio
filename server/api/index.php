@@ -114,6 +114,16 @@ function photoUrl(string $brand, string $id, int $v): string {
     return "$api/?action=photo&brand=$brand&id=$id&v=$v";
 }
 
+/** Fotobestanden in een map (zonder GLOB_BRACE, dat niet overal bestaat). */
+function bankFiles(string $dir, string $pattern): array {
+    return array_values(array_filter(glob("$dir/$pattern.*") ?: [], fn($f) => in_array(strtolower(pathinfo($f, PATHINFO_EXTENSION)), ['jpg', 'png', 'webp'], true)));
+}
+
+function bankUrl(string $brand, string $id): string {
+    $api = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/api/index.php')), '/');
+    return "$api/?action=bank-photo&brand=$brand&id=$id";
+}
+
 /** Data-URL in de post wordt een los bestand + link; null wist het bestand; link naar een andere post wordt gekopieerd. */
 function storePhoto(array &$doc, string $key, string $fileId, string $brand, string $dataDir): void {
     $src = $doc[$key]['src'] ?? null;
@@ -212,6 +222,66 @@ switch ($action) {
         @unlink(dir_for($dataDir, $brand, 'posts') . "/$id.json");
         foreach ([...(glob(dir_for($dataDir, $brand, 'fotos') . "/$id.*") ?: []), ...(glob(dir_for($dataDir, $brand, 'fotos') . "/$id-p2.*") ?: [])] as $f) @unlink($f);
         out(200, ['ok' => true]);
+    }
+
+    // ---------- Fotobank: gedeelde voorraad foto's per merk (data/<merk>/fotobank/) ----------
+    case 'bank-list': {
+        $brand = brandParam($config);
+        requireAuth($brand);
+        $items = [];
+        foreach (bankFiles(dir_for($dataDir, $brand, 'fotobank'), '*') as $f) {
+            $id = pathinfo($f, PATHINFO_FILENAME);
+            $meta = json_decode((string)@file_get_contents(dirname($f) . "/$id.json"), true) ?: [];
+            $items[] = ['id' => $id, 'name' => (string)($meta['name'] ?? $id), 'added' => (string)($meta['added'] ?? gmdate('Y-m-d\TH:i:s\Z', filemtime($f))), 'src' => bankUrl($brand, $id)];
+        }
+        usort($items, fn($a, $b) => strcmp($b['added'], $a['added']));
+        out(200, ['photos' => $items]);
+    }
+
+    case 'bank-upload': {
+        if ($method !== 'POST') fail(405, 'Alleen POST.');
+        $brand = brandParam($config);
+        requireAuth($brand);
+        $in = input();
+        $src = (string)($in['src'] ?? '');
+        if (!preg_match('#^data:image/(jpeg|png|webp);base64,#', $src)) fail(400, 'Alleen JPG, PNG of WebP.');
+        $bin = base64_decode(substr($src, strpos($src, ',') + 1), true);
+        if ($bin === false || strlen($bin) > MAX_PHOTO) fail(413, 'Foto te groot (max 12 MB).');
+        $mime = (new finfo(FILEINFO_MIME_TYPE))->buffer($bin);
+        if (!in_array($mime, ['image/jpeg', 'image/png', 'image/webp'], true)) fail(400, 'Dit is geen geldige foto.');
+        $ext = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'][$mime];
+        $id = 'f' . bin2hex(random_bytes(6));
+        $dir = dir_for($dataDir, $brand, 'fotobank');
+        write_atomic("$dir/$id.$ext", $bin);
+        $name = mb_substr(preg_replace('/[^\p{L}\p{N} ._-]/u', '', (string)($in['name'] ?? '')), 0, 80);
+        $added = gmdate('Y-m-d\TH:i:s\Z');
+        write_atomic("$dir/$id.json", json_encode(['name' => $name, 'added' => $added], JSON_UNESCAPED_UNICODE));
+        out(200, ['photo' => ['id' => $id, 'name' => $name, 'added' => $added, 'src' => bankUrl($brand, $id)]]);
+    }
+
+    case 'bank-delete': {
+        if ($method !== 'POST') fail(405, 'Alleen POST.');
+        $brand = brandParam($config);
+        requireAuth($brand);
+        $id = (string)(input()['id'] ?? '');
+        if (!preg_match(ID_RE, $id)) fail(400, 'Ongeldige foto.');
+        foreach (glob(dir_for($dataDir, $brand, 'fotobank') . "/$id.*") ?: [] as $f) @unlink($f);
+        out(200, ['ok' => true]);
+    }
+
+    case 'bank-photo': {
+        $brand = brandParam($config);
+        requireAuth($brand);
+        $id = (string)($_GET['id'] ?? '');
+        if (!preg_match(ID_RE, $id)) fail(400, 'Ongeldige foto.');
+        $f = bankFiles(dir_for($dataDir, $brand, 'fotobank'), $id)[0] ?? null;
+        if (!$f) fail(404, 'Foto niet gevonden.');
+        header_remove('Cache-Control');
+        header('Cache-Control: private, max-age=31536000, immutable');
+        header('Content-Type: ' . (new finfo(FILEINFO_MIME_TYPE))->file($f));
+        header('Content-Length: ' . filesize($f));
+        readfile($f);
+        exit;
     }
 
     case 'photo': {

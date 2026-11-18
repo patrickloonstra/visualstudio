@@ -6,7 +6,7 @@ import {
 } from "./model";
 import { check, fileSlug, fit, postHtml, renderPng, type Issue } from "./render";
 import { postMarks } from "../logos";
-import { deletePost, downloadFile, importFile, initStorage, listPosts, login, logout, savePost, storage } from "./store";
+import { bankAvailable, bankDelete, bankList, bankUpload, deletePost, downloadFile, importFile, initStorage, listPosts, login, logout, savePost, storage, type BankPhoto } from "./store";
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 const $ = <T extends HTMLElement = HTMLElement>(sel: string, root: ParentNode = document) => root.querySelector<T>(sel)!;
@@ -168,6 +168,13 @@ export function studioHtml() {
       <div class="st-posts"></div>
     </div>
 
+    <dialog class="bank-pick" aria-labelledby="bank-pick-title">
+      <div class="bank-pick-in">
+        <div class="brief-top"><h3 id="bank-pick-title">Kies een foto</h3><button type="button" class="link" data-act="bank-pick-close">Sluiten</button></div>
+        <div class="bank-grid" data-pick-grid></div>
+      </div>
+    </dialog>
+
     <dialog class="st-brief" aria-labelledby="brief-title">
       <form method="dialog" class="brief-form" autocomplete="off">
         <div class="brief-top"><h3 id="brief-title">Waar gaat de post over?</h3><button type="button" class="link" data-act="close">Sluiten</button></div>
@@ -183,8 +190,10 @@ export function studioHtml() {
         </details>
         ${field("kicker")}${field("head")}${field("sub")}${field("details", true)}${field("cta")}
         <div class="brief-grid">
-          <label>Foto 1 <small>(groot, optioneel)</small><input type="file" name="photo" accept="image/*"></label>
-          <label>Foto 2 <small>(klein, optioneel)</small><input type="file" name="photo2" accept="image/*"></label>
+          <div class="brief-photo"><label>Foto 1 <small>(groot, optioneel)</small><input type="file" name="photo" accept="image/*"></label>
+            <button type="button" class="link bank-only" data-act="bank-brief" data-key="photo">Uit fotobank</button> <span class="picked" data-picked="photo"></span></div>
+          <div class="brief-photo"><label>Foto 2 <small>(klein, optioneel)</small><input type="file" name="photo2" accept="image/*"></label>
+            <button type="button" class="link bank-only" data-act="bank-brief" data-key="photo2">Uit fotobank</button> <span class="picked" data-picked="photo2"></span></div>
         </div>
         <p class="brief-warn" role="alert"></p>
         <div class="brief-actions">
@@ -210,6 +219,8 @@ function fillBrief(d: PostDoc | null) {
   ROLES.forEach((r) => ((form.elements.namedItem(r) as HTMLInputElement).placeholder = newDoc(src.type).fields[r] || ""));
   briefPhoto = d?.photo ?? null;
   briefPhoto2 = d?.photo2 ?? null;
+  document.querySelectorAll<HTMLElement>("[data-picked]").forEach((e) => (e.textContent = ""));
+  document.querySelectorAll<HTMLElement>(".bank-only").forEach((e) => (e.hidden = !bankAvailable()));
   $(".brief-warn").textContent = "";
 }
 
@@ -359,6 +370,8 @@ function inspectorPost(d: PostDoc) {
     <div class="ins-block"><span class="ins-label">Foto's</span>
       <label class="btn small ghost">${d.photo ? "Andere foto 1" : "Foto toevoegen"}<input type="file" accept="image/*" data-act="photo" hidden></label>
       ${d.photo ? `<label class="btn small ghost">${d.photo2 ? "Andere foto 2" : "Tweede foto toevoegen"}<input type="file" accept="image/*" data-act="photo2" hidden></label>` : ""}
+      ${bankAvailable() ? `<button type="button" class="link" data-act="bank-ins" data-key="photo">${d.photo ? "Foto 1 uit fotobank" : "Foto uit fotobank"}</button>` : ""}
+      ${bankAvailable() && d.photo ? `<button type="button" class="link" data-act="bank-ins" data-key="photo2">Foto 2 uit fotobank</button>` : ""}
       ${d.photo2 ? `<button type="button" class="link" data-act="nophoto2">Foto 2 weghalen</button>` : ""}
       ${d.photo ? `<button type="button" class="link" data-act="nophoto">Alle foto's weghalen</button>` : ""}
     </div>
@@ -524,7 +537,7 @@ function openPost(d: PostDoc) {
 }
 
 // ---------- Foto inlezen ----------
-function readPhoto(file: File): Promise<string> {
+function readPhoto(file: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
@@ -582,6 +595,22 @@ export function mountStudio(root: HTMLElement) {
     if (!el || (el as HTMLButtonElement).disabled) return;
     const act = el.dataset.act;
     const d = S.doc;
+    if (act === "bank-brief" || act === "bank-ins") {
+      const key = el.dataset.key as PhotoKey;
+      const picked = await pickFromBank();
+      if (!picked) return;
+      const ph = { src: picked.src, x: 50, y: 50, zoom: 1 };
+      if (act === "bank-brief") {
+        if (key === "photo") briefPhoto = ph;
+        else briefPhoto2 = ph;
+        $(`[data-picked="${key}"]`).textContent = `Gekozen: ${picked.name}`;
+        return;
+      }
+      return update((x) => {
+        x[key] = ph;
+        if (!layoutsFor(x).some((l) => l.id === x.layout)) x.layout = layoutsFor(x)[0].id;
+      }, { inspector: true });
+    }
     if (el.dataset.preset) return applyPick(el.dataset.role as Role, el.dataset.where!, el.dataset.preset);
     if (act === "brief") return openBriefing("new");
     if (act === "rebrief") return openBriefing("edit");
@@ -772,6 +801,7 @@ export function mountStudio(root: HTMLElement) {
 
 async function start() {
   await renderLibrary();
+  if (location.hash === "#fotobank") renderBank();
   // Laatst bewerkte post weer openen.
   if (cache[0] && !S.doc) openPostQuiet(cache[0]);
 }
@@ -807,4 +837,99 @@ function fillBriefPlaceholders(type: string) {
   const form = $<HTMLFormElement>(".brief-form");
   const ex = newDoc(type).fields;
   ROLES.forEach((r) => ((form.elements.namedItem(r) as HTMLInputElement).placeholder = ex[r] || ""));
+}
+
+
+// ---------- Fotobank ----------
+let bankCache: BankPhoto[] = [];
+
+export function bankHtml() {
+  return `<div class="bank-app">
+    <div class="bank-top">
+      <label class="btn small">Foto's toevoegen<input type="file" accept="image/*" multiple data-act="bank-add" hidden></label>
+      <span class="bank-status" aria-live="polite"></span>
+    </div>
+    <p class="bank-off" hidden>De fotobank werkt als de tool online staat. In een los bestand kun je foto's alleen per post kiezen.</p>
+    <div class="bank-grid" data-bank-grid></div>
+  </div>`;
+}
+
+const bankTile = (p: BankPhoto, pick = false) =>
+  `<figure class="bank-tile" data-bank-id="${p.id}">
+    <button type="button" class="bank-img" ${pick ? `data-pick="${p.id}"` : `data-view-bank="${p.id}"`} title="${esc(p.name)}"><img src="${p.src}" alt="${esc(p.name)}" loading="lazy"></button>
+    <figcaption><span>${esc(p.name || "Foto")}</span>${pick ? "" : `<button type="button" class="link danger" data-bank-del="${p.id}">Verwijderen</button>`}</figcaption>
+  </figure>`;
+
+export async function renderBank() {
+  const root = document.querySelector<HTMLElement>(".bank-app");
+  if (!root) return;
+  const on = bankAvailable();
+  root.querySelector<HTMLElement>(".bank-off")!.hidden = on;
+  root.querySelector<HTMLElement>(".bank-top")!.hidden = !on;
+  try {
+    bankCache = await bankList();
+  } catch (err) {
+    toast(err instanceof Error ? err.message : "Fotobank ophalen mislukt.");
+  }
+  root.querySelector<HTMLElement>("[data-bank-grid]")!.innerHTML = bankCache.length
+    ? bankCache.map((p) => bankTile(p)).join("")
+    : on ? `<p class="st-none">Nog geen foto's. Voeg de beste foto's van opkomsten en kampen toe, dan kan iedereen ze gebruiken.</p>` : "";
+}
+
+/** Opent de kiezer en geeft de gekozen foto als data-URL terug (gekopieerd, dus de post blijft heel als de foto later uit de fotobank gaat). */
+function pickFromBank(): Promise<{ src: string; name: string } | null> {
+  return new Promise(async (resolve) => {
+    const dlg = $<HTMLDialogElement>(".bank-pick");
+    const grid = dlg.querySelector<HTMLElement>("[data-pick-grid]")!;
+    try {
+      bankCache = await bankList();
+    } catch {
+      /* lege lijst */
+    }
+    grid.innerHTML = bankCache.length ? bankCache.map((p) => bankTile(p, true)).join("") : `<p class="st-none">De fotobank is nog leeg. Voeg foto's toe via Fotobank bovenin.</p>`;
+    const done = (v: { src: string; name: string } | null) => {
+      dlg.removeEventListener("click", onClick);
+      dlg.close();
+      resolve(v);
+    };
+    const onClick = async (e: Event) => {
+      const t = e.target as HTMLElement;
+      if (t.closest("[data-act=bank-pick-close]") || t === dlg) return done(null);
+      const id = t.closest<HTMLElement>("[data-pick]")?.dataset.pick;
+      const p = bankCache.find((x) => x.id === id);
+      if (!p) return;
+      const blob = await (await fetch(new URL(p.src, location.href), { credentials: "same-origin" })).blob();
+      done({ src: await readPhoto(blob), name: p.name || "foto" });
+    };
+    dlg.addEventListener("click", onClick);
+    dlg.showModal();
+  });
+}
+
+export function mountBank(root: HTMLElement) {
+  root.addEventListener("change", async (e) => {
+    const t = e.target as HTMLInputElement;
+    if (t.dataset.act !== "bank-add" || !t.files?.length) return;
+    const files = [...t.files];
+    const status = root.querySelector<HTMLElement>(".bank-status")!;
+    let n = 0;
+    for (const f of files) {
+      status.textContent = `Bezig: ${++n} van ${files.length}…`;
+      try {
+        await bankUpload(await readPhoto(f), f.name.replace(/\.[^.]+$/, ""));
+      } catch (err) {
+        toast(`${f.name}: ${err instanceof Error ? err.message : "uploaden mislukt"}`);
+      }
+    }
+    status.textContent = `${files.length} ${files.length === 1 ? "foto" : "foto's"} toegevoegd.`;
+    t.value = "";
+    renderBank();
+  });
+  root.addEventListener("click", async (e) => {
+    const del = (e.target as HTMLElement).closest<HTMLElement>("[data-bank-del]")?.dataset.bankDel;
+    if (!del) return;
+    if (!confirm("Deze foto uit de fotobank verwijderen? Posts die hem al gebruiken blijven heel.")) return;
+    await bankDelete(del);
+    renderBank();
+  });
 }

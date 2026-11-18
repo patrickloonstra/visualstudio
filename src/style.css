@@ -443,3 +443,23 @@ button { font: inherit; cursor: pointer; }
 .foot-row { align-items: center; }
 .foot a { color: inherit; text-underline-offset: 3px; }
 .foot-maker { opacity: .9; }
+
+/* ---------- Fotobank ---------- */
+.bank-top { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+.bank-top[hidden], .bank-off[hidden] { display: none; }
+.bank-status { font-size: 14px; opacity: .75; }
+.bank-off { background: var(--surface); border-radius: 12px; padding: 14px 18px; }
+.bank-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
+.bank-tile { margin: 0; }
+.bank-img { display: block; width: 100%; aspect-ratio: 1; padding: 0; border: 0; border-radius: 10px; overflow: hidden; background: var(--surface); cursor: pointer; box-shadow: 0 0 0 1px var(--line); }
+.bank-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.bank-img:hover { box-shadow: 0 0 0 3px var(--primary); }
+.bank-tile figcaption { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; margin-top: 6px; }
+.bank-tile figcaption span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bank-pick { border: 0; border-radius: 18px; padding: 0; width: min(860px, calc(100vw - 24px)); max-height: calc(100vh - 32px); }
+.bank-pick::backdrop { background: rgb(0 0 0 / .5); }
+.bank-pick-in { padding: 24px; display: grid; gap: 16px; }
+.brief-photo { display: grid; gap: 4px; align-content: start; }
+.brief-photo .link { justify-self: start; font-size: 14px; }
+.picked { font-size: 13px; color: var(--primary); }
+.bank-only[hidden] { display: none; }

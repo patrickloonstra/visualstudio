@@ -2,7 +2,7 @@ import "./style.css";
 import { exposeApi } from "./api";
 import { brand, color, fontUrl } from "./brand";
 import { guideHtml, ui, wireGuide } from "./guide";
-import { mountStudio, studioHtml } from "./studio/ui";
+import { bankHtml, mountBank, mountStudio, renderBank, studioHtml } from "./studio/ui";
 
 // Tokens uit brand.json naar CSS: merkkleuren (--c-*), paginarollen (--primary e.d.) en fonts.
 function applyTokens() {
@@ -32,7 +32,9 @@ function applyTokens() {
 }
 
 applyTokens();
-document.querySelector("#app")!.innerHTML = guideHtml(studioHtml());
+document.querySelector("#app")!.innerHTML = guideHtml(studioHtml(), bankHtml());
 wireGuide();
 mountStudio(document.querySelector<HTMLElement>("#studio-app")!);
+mountBank(document.querySelector<HTMLElement>("#fotobank")!);
+window.addEventListener("merkstudio:view", (e) => (e as CustomEvent).detail === "fotobank" && renderBank());
 exposeApi(brand.short.toLowerCase());

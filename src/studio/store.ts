@@ -166,3 +166,21 @@ export async function importFile(file: File): Promise<number> {
   }
   return n;
 }
+
+// ---------- Fotobank (alleen online, gedeeld door iedereen van het merk) ----------
+export type BankPhoto = { id: string; name: string; added: string; src: string };
+
+export const bankAvailable = () => storage.mode === "server" && storage.loggedIn && !storage.problem;
+
+export async function bankList(): Promise<BankPhoto[]> {
+  if (!bankAvailable()) return [];
+  return (await call<{ photos: BankPhoto[] }>("bank-list")).photos;
+}
+
+export async function bankUpload(src: string, name: string): Promise<BankPhoto> {
+  return (await call<{ photo: BankPhoto }>("bank-upload", { src, name })).photo;
+}
+
+export async function bankDelete(id: string) {
+  await call("bank-delete", { id });
+}

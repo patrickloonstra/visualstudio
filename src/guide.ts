@@ -57,7 +57,7 @@ function nav() {
   const l = logos[0];
   return `<nav class="nav" aria-label="Hoofdmenu">
     <a class="nav-brand" href="#studio">${l ? logoSvg(l, logoOn(l, X.ui.primary)) : ""}<span>${esc(brand.name)}</span></a>
-    <ul><li><a href="#studio" data-view="studio">Maak een post</a></li><li><a href="#stijlgids" data-view="stijlgids">Stijlgids</a></li></ul>
+    <ul><li><a href="#studio" data-view="studio">Maak een post</a></li><li><a href="#fotobank" data-view="fotobank">Fotobank</a></li><li><a href="#stijlgids" data-view="stijlgids">Stijlgids</a></li></ul>
   </nav>`;
 }
 
@@ -125,11 +125,12 @@ async function downloadAll(btn: HTMLButtonElement) {
 }
 
 // ---------- Alles samen ----------
-export function guideHtml(studio: string) {
+export function guideHtml(studio: string, bank = "") {
   return (
     nav() +
     "<main>" +
     `<section id="studio" class="view section studio"><div class="wrap"><h1 class="view-title">Maak een post</h1><p class="intro">Vul je tekst in, kies een foto en een variant, en download. Kleuren, letters en logo kloppen altijd.</p><div id="studio-app">${studio}</div></div></section>` +
+    `<section id="fotobank" class="view section" hidden><div class="wrap"><h1 class="view-title">Fotobank</h1><p class="intro">Eén voorraad foto's voor iedereen. Kies ze bij een post met <strong>Uit fotobank</strong>.</p>${bank}</div></section>` +
     guideView() +
     "</main>" +
     `<footer class="foot"><div class="wrap foot-row"><span class="foot-maker">© ${new Date(typeof __BUILD__ === "object" ? __BUILD__.time : Date.now()).getFullYear()} Patrick Loonstra · gemaakt door <a href="https://patrickloonstra.nl" target="_blank" rel="noopener">patrickloonstra.nl</a></span><span class="foot-version">${versionLine()}</span></div></footer><div class="toast" role="status" aria-live="polite"></div>`
@@ -146,12 +147,13 @@ function versionLine() {
 }
 
 /** Twee weergaven in één bestand: #stijlgids toont de gids, al het andere de studio. */
+/** Drie weergaven in één bestand: #stijlgids, #fotobank, en anders de studio. */
 function route() {
-  const guide = location.hash === "#stijlgids";
-  document.querySelector<HTMLElement>("#stijlgids")!.hidden = !guide;
-  document.querySelector<HTMLElement>("#studio")!.hidden = guide;
-  document.querySelectorAll<HTMLElement>("[data-view]").forEach((a) => a.classList.toggle("on", (a.dataset.view === "stijlgids") === guide));
-  if (guide) window.scrollTo(0, 0);
+  const view = location.hash === "#stijlgids" ? "stijlgids" : location.hash === "#fotobank" ? "fotobank" : "studio";
+  for (const id of ["studio", "fotobank", "stijlgids"]) document.querySelector<HTMLElement>(`#${id}`)!.hidden = id !== view;
+  document.querySelectorAll<HTMLElement>("[data-view]").forEach((a) => a.classList.toggle("on", a.dataset.view === view));
+  if (view !== "studio") window.scrollTo(0, 0);
+  window.dispatchEvent(new CustomEvent("merkstudio:view", { detail: view }));
 }
 
 function toast(msg: string) {

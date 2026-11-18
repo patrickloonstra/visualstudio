@@ -104,3 +104,20 @@ npm run build:server -- vinchem
 Kopieer daarna de inhoud van `dist/server/` naar `vinchem/` in de repo `dev` en houd daarbij `vinchem/api/config.php` intact. Commit en push naar `main`. Plesk haalt de wijziging op via de webhook, of met **Pull updates** in Plesk > Git.
 
 Data staat op `/var/www/vhosts/patrickloonstra.nl/merkstudio-data/` en wordt door een publicatie niet aangeraakt.
+
+## Wat staat waar op de server
+
+Alles staat in `merkstudio-data/`, naast de webmap (niet via internet bereikbaar):
+
+```
+merkstudio-data/
+  vinchem/
+    posts/<id>.json        een post: tekst, layout, kleuren, stand van de stempel
+    fotos/<id>.jpg         foto 1 van die post
+    fotos/<id>-p2.jpg      foto 2 (klein) van die post
+    fotobank/<id>.jpg      foto in de fotobank
+    fotobank/<id>.json     naam en datum van die foto
+  .logins.json             inlogpogingen (rem op raden)
+```
+
+Een foto die je uit de fotobank kiest, wordt naar de post gekopieerd. Verwijder je hem later uit de fotobank, dan blijft de post heel. Back-up = de map `merkstudio-data/` downloaden.
