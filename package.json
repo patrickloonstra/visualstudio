@@ -9,7 +9,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "post": "tsx scripts/make-post.ts",
-    "build:all": "tsc && tsx scripts/build-all.ts"
+    "build:all": "tsc && tsx scripts/build-all.ts",
+    "build:server": "npm run build:all && tsx scripts/package-server.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",

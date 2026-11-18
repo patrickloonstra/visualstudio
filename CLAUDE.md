@@ -54,9 +54,10 @@ Succes na de eerste test: iemand van Vinchem maakt binnen een week zelf een post
 - Layouts zijn HTML/CSS-sjablonen die alleen tokens uit `brand.json` gebruiken, nooit hardcoded waarden
 - Stack: Vite + TypeScript, zo min mogelijk afhankelijkheden. Export met `html-to-image` (PNG) en print-CSS of `jspdf` (PDF)
 - Build levert per merk één zelfstandig HTML-bestand op (`vite-plugin-singlefile`), zodat het ook als los bestand te mailen is
-- Deploy op Vercel, per merk een eigen pad of subdomein (bijv. `vinchem.<domein>`)
-- Geen accounts, geen backend in v1
-- Opslag: posts in de browser (IndexedDB) plus export/import als `.merkstudio.json`. Elke post is één `PostDoc` (tekst, foto, layout, thema, aanpassingen)
+- Deploy: per merk een eigen pad onder één subdomein (bijv. `merk.patrickloonstra.nl/vinchem/`)
+- Geen accounts en geen database. Wel een optionele flat-file-opslag in PHP (besluit Patrick, 2026-11-18): `server/api/index.php` bewaart posts als JSON en foto's als bestanden, met een toegangscode per merk (`config.php`, niet in git)
+- Opslag, twee standen die de tool zelf kiest: online met `api/` ernaast = server; los HTML-bestand = browser (IndexedDB). In beide: export/import als `.merkstudio.json`. Elke post is één `PostDoc` (tekst, foto, layout, thema, aanpassingen)
+- Hosting: gewone PHP-host (Cloud86/Plesk), subdomein van patrickloonstra.nl. Zie `docs/online-zetten.md`; `npm run build:server` maakt de uploadmap
 
 ## Code (stand na fase 2)
 - `src/main.ts`: opstart. Zet kleuren uit `brand.json` als CSS-variabelen: `--c-<id>` en paginarollen `--primary`, `--on-primary`, `--surface`, `--paper`, `--line`, `--ink`, `--highlight` (uit `brand.json > ui`). CSS gebruikt alleen die rollen, nooit merknamen

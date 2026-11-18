@@ -375,3 +375,11 @@ button { font: inherit; cursor: pointer; }
 .weights .w { font-family: var(--font-heading); font-size: 40px; line-height: 1.1; color: var(--primary); }
 .weights .meta { font-size: 14px; opacity: .7; }
 @media (max-width: 760px) { .hero-mark svg { max-width: 220px; margin: 0; } }
+.st-login { max-width: 420px; margin: 0 auto; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 28px; display: grid; gap: 12px; }
+.st-login[hidden], .st-bar[hidden], .st-library[hidden] { display: none; }
+.st-login h3 { font-size: 28px; color: var(--primary); }
+.st-login label { display: grid; gap: 4px; font-weight: 700; font-size: 15px; }
+.st-login input { font: inherit; font-size: 17px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; }
+.st-login-err:empty { display: none; }
+.st-login-err { background: var(--highlight); color: var(--ink); padding: 8px 12px; border-radius: 8px; }
+.link[hidden] { display: none; }

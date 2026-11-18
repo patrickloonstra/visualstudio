@@ -19,6 +19,7 @@ function contrastGuard(): Plugin {
 
 export default defineConfig({
   resolve: { alias: { "@brand": brandDir } },
+  define: { __BRAND_ID__: JSON.stringify(brand) },
   plugins: [contrastGuard(), viteSingleFile()],
   build: { outDir: `dist/${brand}`, assetsInlineLimit: 100_000_000 },
 });

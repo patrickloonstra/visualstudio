@@ -1,0 +1,36 @@
+// Zet alles klaar om te uploaden naar een gewone PHP-host (bijv. Cloud86/Plesk):
+//
+//   dist/server/
+//     index.html            kiest het merk (of stuurt door als er één is)
+//     <merk>/index.html     de tool per merk
+//     api/index.php         opslag (flat file), config.example.php
+//     api/.htaccess
+//     data/.htaccess        alleen nodig als de data in de webmap moet staan
+//
+// Draai eerst: npm run build:all
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+
+const out = "dist/server";
+rmSync(out, { recursive: true, force: true });
+mkdirSync(out, { recursive: true });
+
+const brands = readdirSync("dist").filter((d) => d !== "server" && existsSync(`dist/${d}/index.html`));
+if (!brands.length) throw new Error("Geen gebouwde merken. Draai eerst: npm run build:all");
+for (const b of brands) cpSync(`dist/${b}`, `${out}/${b}`, { recursive: true });
+
+cpSync("server/api", `${out}/api`, { recursive: true, filter: (src) => !src.endsWith("config.php") });
+mkdirSync(`${out}/data`, { recursive: true });
+cpSync("server/data/.htaccess", `${out}/data/.htaccess`);
+writeFileSync(`${out}/data/index.html`, "");
+
+const names = brands.map((b) => {
+  const j = JSON.parse(readFileSync(`brands/${b}/brand.json`, "utf8"));
+  return { id: b, name: j.name as string };
+});
+writeFileSync(
+  `${out}/index.html`,
+  names.length === 1
+    ? `<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=${names[0].id}/"><title>${names[0].name}</title><a href="${names[0].id}/">${names[0].name}</a>`
+    : `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Merkstudio</title><style>body{font:18px/1.5 system-ui;margin:48px auto;max-width:560px;padding:0 16px}a{display:block;padding:12px 0}</style><h1>Merkstudio</h1>${names.map((n) => `<a href="${n.id}/">${n.name}</a>`).join("")}`,
+);
+console.log(`Klaar: ${out}/ (${brands.join(", ")}). Upload de inhoud naar de webmap van het subdomein.`);

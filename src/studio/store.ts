@@ -1,10 +1,60 @@
-// Opslag: posts blijven bewaard in de browser (IndexedDB) en zijn te bewaren/openen als bestand.
+// Opslag. Twee standen, de tool kiest zelf:
+//  - server: online met api/ ernaast. Posts en foto's staan als bestanden op de server (flat file).
+//  - lokaal: los HTML-bestand. Posts staan in deze browser (IndexedDB).
+// In beide standen kun je alles bewaren als bestand en weer openen.
 import { B, type PostDoc } from "./model";
 
-const DB = `merkstudio-${B.short.toLowerCase()}`;
+declare const __BRAND_ID__: string;
+const BRAND = typeof __BRAND_ID__ === "string" ? __BRAND_ID__ : B.short.toLowerCase();
+
+export const storage = { mode: "local" as "local" | "server", loggedIn: false, persistent: true };
+
+// ---------- Server ----------
+const api = (action: string, extra = "") => new URL(`../api/?action=${action}&brand=${encodeURIComponent(BRAND)}${extra}`, location.href).toString();
+
+async function call<T>(action: string, body?: unknown): Promise<T> {
+  const res = await fetch(api(action), {
+    method: body === undefined ? "GET" : "POST",
+    headers: body === undefined ? {} : { "Content-Type": "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body),
+    credentials: "same-origin",
+  });
+  const json = await res.json().catch(() => ({}));
+  if (res.status === 401) storage.loggedIn = false;
+  if (!res.ok) throw new Error(json.error ?? `Serverfout (${res.status})`);
+  return json as T;
+}
+
+/** Kijkt of er een server naast de pagina staat. Eén keer bij het opstarten. */
+export async function initStorage() {
+  if (!location.protocol.startsWith("http")) return;
+  try {
+    const res = await fetch(api("status"), { credentials: "same-origin" });
+    const s = await res.json();
+    if (s?.server && s.brand === BRAND) {
+      storage.mode = "server";
+      storage.loggedIn = !!s.loggedIn;
+    }
+  } catch {
+    /* geen server: lokaal */
+  }
+}
+
+export async function login(code: string) {
+  await call("login", { code });
+  storage.loggedIn = true;
+}
+
+export async function logout() {
+  await call("logout", {});
+  storage.loggedIn = false;
+}
+
+// ---------- Lokaal (IndexedDB) ----------
+const DB = `merkstudio-${BRAND}`;
 const STORE = "posts";
 let dbp: Promise<IDBDatabase> | null = null;
-let memory = new Map<string, PostDoc>(); // terugval als IndexedDB niet mag (privévenster)
+const memory = new Map<string, PostDoc>(); // terugval als IndexedDB niet mag (privévenster)
 
 function open(): Promise<IDBDatabase> {
   dbp ??= new Promise((resolve, reject) => {
@@ -25,19 +75,22 @@ async function tx<T>(mode: IDBTransactionMode, fn: (s: IDBObjectStore) => IDBReq
   });
 }
 
-export const storage = { persistent: true };
-
-export async function savePost(d: PostDoc) {
+// ---------- Publiek ----------
+/** Slaat op en geeft de opgeslagen versie terug (op de server wordt een foto-upload een link). */
+export async function savePost(d: PostDoc): Promise<PostDoc> {
   d.updated = new Date().toISOString();
+  if (storage.mode === "server") return (await call<{ post: PostDoc }>("save", d)).post;
   try {
     await tx("readwrite", (s) => s.put(structuredClone(d)));
   } catch {
     storage.persistent = false;
     memory.set(d.id, structuredClone(d));
   }
+  return d;
 }
 
 export async function listPosts(): Promise<PostDoc[]> {
+  if (storage.mode === "server") return storage.loggedIn ? (await call<{ posts: PostDoc[] }>("list")).posts : [];
   let all: PostDoc[];
   try {
     all = await tx("readonly", (s) => s.getAll() as IDBRequest<PostDoc[]>);
@@ -49,6 +102,7 @@ export async function listPosts(): Promise<PostDoc[]> {
 }
 
 export async function deletePost(id: string) {
+  if (storage.mode === "server") return void (await call("delete", { id }));
   memory.delete(id);
   try {
     await tx("readwrite", (s) => s.delete(id));
@@ -60,8 +114,20 @@ export async function deletePost(id: string) {
 // ---------- Bestand ----------
 type FileShape = { app: "merkstudio"; brand: string; exported: string; posts: PostDoc[] };
 
-export function downloadFile(posts: PostDoc[], name = `${B.short.toLowerCase()}-posts`) {
-  const data: FileShape = { app: "merkstudio", brand: B.short.toLowerCase(), exported: new Date().toISOString(), posts };
+/** Foto-links (server) omzetten naar ingebedde data, zodat het bestand overal werkt. */
+async function inline(p: PostDoc): Promise<PostDoc> {
+  if (!p.photo || p.photo.src.startsWith("data:")) return p;
+  const blob = await (await fetch(new URL(p.photo.src, location.href), { credentials: "same-origin" })).blob();
+  const src = await new Promise<string>((resolve) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result));
+    r.readAsDataURL(blob);
+  });
+  return { ...p, photo: { ...p.photo, src } };
+}
+
+export async function downloadFile(posts: PostDoc[], name = `${BRAND}-posts`) {
+  const data: FileShape = { app: "merkstudio", brand: BRAND, exported: new Date().toISOString(), posts: await Promise.all(posts.map(inline)) };
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: "application/json" }));
   a.download = `${name}.merkstudio.json`;
@@ -73,15 +139,13 @@ export function downloadFile(posts: PostDoc[], name = `${B.short.toLowerCase()}-
 export async function importFile(file: File): Promise<number> {
   const json = JSON.parse(await file.text());
   const posts: PostDoc[] = Array.isArray(json?.posts) ? json.posts : json?.fields ? [json] : [];
-  if (json?.brand && json.brand !== B.short.toLowerCase()) throw new Error(`Dit bestand hoort bij een ander merk (${json.brand}).`);
+  if (json?.brand && json.brand !== BRAND) throw new Error(`Dit bestand hoort bij een ander merk (${json.brand}).`);
+  let n = 0;
   for (const p of posts) {
     if (!p.id || !p.fields) continue;
-    if (p.photo && !p.photo.src.startsWith("data:")) p.photo = null; // los pad werkt niet in de browser
+    if (p.photo && !p.photo.src.startsWith("data:")) p.photo = null; // losse link werkt niet buiten de oorspronkelijke plek
     await savePost(p);
+    n++;
   }
-  return posts.length;
-}
-
-export function resetMemory() {
-  memory = new Map();
+  return n;
 }

@@ -1,0 +1,2 @@
+# Niets uit deze map is direct via de browser op te vragen. Alleen api/ leest hier.
+Require all denied

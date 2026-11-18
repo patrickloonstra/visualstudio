@@ -5,7 +5,7 @@ import {
   type PostDoc, type Role,
 } from "./model";
 import { check, fileSlug, fit, postHtml, renderPng, type Issue } from "./render";
-import { deletePost, downloadFile, importFile, listPosts, savePost, storage } from "./store";
+import { deletePost, downloadFile, importFile, initStorage, listPosts, login, logout, savePost, storage } from "./store";
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 const $ = <T extends HTMLElement = HTMLElement>(sel: string, root: ParentNode = document) => root.querySelector<T>(sel)!;
@@ -48,7 +48,16 @@ function persist() {
   clearTimeout(saveTimer);
   saveTimer = window.setTimeout(async () => {
     if (!S.doc) return;
-    await savePost(S.doc);
+    const sent = S.doc.photo?.src;
+    try {
+      const saved = await savePost(structuredClone(S.doc));
+      // Op de server wordt een geüploade foto een link: die overnemen, dan gaat hij maar één keer mee.
+      if (S.doc?.id === saved.id && S.doc.photo && saved.photo && S.doc.photo.src === sent) S.doc.photo.src = saved.photo.src;
+    } catch (err) {
+      toast(err instanceof Error ? `Niet opgeslagen: ${err.message}` : "Niet opgeslagen.");
+      if (storage.mode === "server" && !storage.loggedIn) showLogin();
+      return;
+    }
     renderLibrary();
   }, 400);
 }
@@ -96,12 +105,21 @@ export function studioHtml() {
       <div class="st-variants"></div>
     </div>
 
+    <form class="st-login" hidden autocomplete="on">
+      <h3>Inloggen</h3>
+      <p>De studio bewaart posts en foto's op de server. Vul de toegangscode in die je van ${esc(brand.name)} of Patrick hebt gekregen.</p>
+      <label>Toegangscode<input type="password" name="code" autocomplete="current-password" required></label>
+      <p class="st-login-err" role="alert"></p>
+      <button type="submit" class="btn small">Inloggen</button>
+    </form>
+
     <div class="st-library">
       <div class="st-head-row">
         <h3>Mijn posts</h3>
         <div class="st-lib-actions">
           <button type="button" class="btn small ghost" data-act="export">Bewaar als bestand</button>
           <label class="btn small ghost">Open bestand<input type="file" accept=".json,application/json" data-act="import" hidden></label>
+          <button type="button" class="link" data-act="logout" hidden>Uitloggen</button>
         </div>
       </div>
       <p class="st-storage"></p>
@@ -381,10 +399,20 @@ function wireCanvas() {
 
 // ---------- Mijn posts ----------
 async function renderLibrary() {
-  const posts = await listPosts();
-  $(".st-storage").textContent = storage.persistent
-    ? `${posts.length} ${posts.length === 1 ? "post" : "posts"} bewaard in deze browser. Wil je verder op een andere computer? Kies Bewaar als bestand.`
-    : "Let op: deze browser bewaart niets (privévenster?). Kies Bewaar als bestand voordat je de pagina sluit.";
+  let posts: PostDoc[] = [];
+  try {
+    posts = await listPosts();
+  } catch (err) {
+    toast(err instanceof Error ? err.message : "Posts ophalen mislukt.");
+  }
+  const n = `${posts.length} ${posts.length === 1 ? "post" : "posts"}`;
+  $(".st-storage").textContent =
+    storage.mode === "server"
+      ? `${n} opgeslagen op de server. Iedereen met de toegangscode ziet en bewerkt dezelfde posts.`
+      : storage.persistent
+        ? `${n} bewaard in deze browser. Wil je verder op een andere computer? Kies Bewaar als bestand.`
+        : "Let op: deze browser bewaart niets (privévenster?). Kies Bewaar als bestand voordat je de pagina sluit.";
+  $("[data-act=logout]").hidden = storage.mode !== "server";
   const list = $(".st-posts");
   list.innerHTML = posts.length
     ? posts
@@ -491,13 +519,18 @@ export function mountStudio(root: HTMLElement) {
       return;
     }
     if (act === "export") return downloadFile(await listPosts());
+    if (act === "logout") {
+      await logout();
+      S.doc = null;
+      renderEditor();
+      return showLogin();
+    }
     if (el.dataset.open) return openPost(cache.find((p) => p.id === el.dataset.open)!);
     if (el.dataset.copy) {
       const p = structuredClone(cache.find((x) => x.id === el.dataset.copy)!);
       p.id = newDoc().id;
       p.created = new Date().toISOString();
-      await savePost(p);
-      return openPost(p);
+      return openPost(await savePost(p));
     }
     if (el.dataset.del) {
       if (!confirm("Deze post verwijderen? Dit kan niet ongedaan worden.")) return;
@@ -570,10 +603,42 @@ export function mountStudio(root: HTMLElement) {
     rt = window.setTimeout(() => S.doc && renderCanvas(), 150);
   });
 
-  renderLibrary().then(async () => {
-    // Laatst bewerkte post weer openen.
-    if (cache[0]) openPostQuiet(cache[0]);
+  $<HTMLFormElement>(".st-login").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const input = $<HTMLInputElement>(".st-login input[name=code]");
+    try {
+      await login(input.value);
+      input.value = "";
+      $(".st-login").hidden = true;
+      setLocked(false);
+      await start();
+    } catch (err) {
+      $(".st-login-err").textContent = err instanceof Error ? err.message : "Inloggen mislukt.";
+    }
   });
+
+  initStorage().then(() => (storage.mode === "server" && !storage.loggedIn ? showLogin() : start()));
+}
+
+async function start() {
+  await renderLibrary();
+  // Laatst bewerkte post weer openen.
+  if (cache[0] && !S.doc) openPostQuiet(cache[0]);
+}
+
+/** In de serverstand zonder login: alleen het inlogscherm, de rest dicht. */
+function setLocked(locked: boolean) {
+  [".st-bar", ".st-empty", ".st-library"].forEach((sel) => ($(sel).hidden = locked));
+  if (locked) {
+    $(".st-work").hidden = true;
+    $(".st-variants-wrap").hidden = true;
+  }
+}
+
+function showLogin() {
+  setLocked(true);
+  $(".st-login").hidden = false;
+  $<HTMLInputElement>(".st-login input[name=code]").focus({ preventScroll: true });
 }
 
 function openPostQuiet(d: PostDoc) {

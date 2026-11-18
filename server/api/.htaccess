@@ -1,0 +1,5 @@
+# config.php en andere bestanden nooit los uitleveren; alleen index.php draait.
+<FilesMatch "^(?!index\.php$).*">
+  Require all denied
+</FilesMatch>
+DirectoryIndex index.php
