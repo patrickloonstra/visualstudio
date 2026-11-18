@@ -31,6 +31,7 @@ const ID_RE = '/^[a-z0-9-]{4,64}$/';
 const BRAND_RE = '/^[a-z0-9-]{2,40}$/';
 
 header('X-Content-Type-Options: nosniff');
+header('X-Robots-Tag: noindex, nofollow');
 header('Cache-Control: no-store');
 
 session_name('merkstudio');
@@ -63,7 +64,14 @@ function brandParam(array $config): string {
     return $b;
 }
 
+/** Zonder toegangscode ("require_code" => false in config.php) mag iedereen met het adres erin. */
+function isOpen(): bool {
+    global $config;
+    return ($config['require_code'] ?? true) === false;
+}
+
 function requireAuth(string $brand): void {
+    if (isOpen()) return;
     $ok = $_SESSION['brands'] ?? [];
     if (!in_array($brand, $ok, true) && empty($_SESSION['admin'])) fail(401, 'Log eerst in.');
 }
@@ -114,7 +122,7 @@ switch ($action) {
     case 'status': {
         $brand = (string)($_GET['brand'] ?? '');
         $known = preg_match(BRAND_RE, $brand) && isset($config['brands'][$brand]);
-        out(200, ['server' => true, 'setup' => false, 'brand' => $known ? $brand : null, 'loggedIn' => $known && (in_array($brand, $_SESSION['brands'] ?? [], true) || !empty($_SESSION['admin']))]);
+        out(200, ['server' => true, 'setup' => false, 'open' => isOpen(), 'brand' => $known ? $brand : null, 'loggedIn' => $known && (isOpen() || in_array($brand, $_SESSION['brands'] ?? [], true) || !empty($_SESSION['admin']))]);
     }
 
     case 'login': {

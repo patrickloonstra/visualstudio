@@ -408,11 +408,11 @@ async function renderLibrary() {
   const n = `${posts.length} ${posts.length === 1 ? "post" : "posts"}`;
   $(".st-storage").textContent =
     storage.mode === "server"
-      ? `${n} opgeslagen op de server. Iedereen met de toegangscode ziet en bewerkt dezelfde posts.`
+      ? `${n} opgeslagen op de server. ${storage.open ? "Iedereen met dit adres" : "Iedereen met de toegangscode"} ziet en bewerkt dezelfde posts.`
       : storage.persistent
         ? `${n} bewaard in deze browser. Wil je verder op een andere computer? Kies Bewaar als bestand.`
         : "Let op: deze browser bewaart niets (privévenster?). Kies Bewaar als bestand voordat je de pagina sluit.";
-  $("[data-act=logout]").hidden = storage.mode !== "server";
+  $("[data-act=logout]").hidden = storage.mode !== "server" || storage.open;
   const list = $(".st-posts");
   list.innerHTML = posts.length
     ? posts

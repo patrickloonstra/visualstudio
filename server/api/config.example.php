@@ -10,6 +10,10 @@ return [
     // (afgeschermd met .htaccess, minder veilig).
     'data_dir' => dirname((string)($_SERVER['DOCUMENT_ROOT'] ?? dirname(__DIR__, 2))) . '/merkstudio-data',
 
+    // Toegangscode verplicht? Zet op false om de studio zonder code open te zetten:
+    // dan kan iedereen die het adres kent posts maken, bekijken en verwijderen.
+    'require_code' => true,
+
     // Toegangscode per merk (als hash). De sleutel is de mapnaam van het merk.
     'brands' => [
         'vinchem' => '$2y$10$VERVANG_DOOR_HASH',

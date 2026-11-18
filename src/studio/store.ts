@@ -7,7 +7,7 @@ import { B, type PostDoc } from "./model";
 declare const __BRAND_ID__: string;
 const BRAND = typeof __BRAND_ID__ === "string" ? __BRAND_ID__ : B.short.toLowerCase();
 
-export const storage = { mode: "local" as "local" | "server", loggedIn: false, persistent: true, problem: "" };
+export const storage = { mode: "local" as "local" | "server", loggedIn: false, persistent: true, problem: "", open: false };
 
 // ---------- Server ----------
 // De API staat naast de tool (contenttool/api/) of één map hoger (contenttool/vinchem/ -> contenttool/api/).
@@ -31,7 +31,7 @@ async function call<T>(action: string, body?: unknown): Promise<T> {
 export async function initStorage() {
   if (!location.protocol.startsWith("http")) return;
   try {
-    let s: { server?: boolean; setup?: boolean; error?: string; brand?: string; loggedIn?: boolean } | null = null;
+    let s: { server?: boolean; setup?: boolean; open?: boolean; error?: string; brand?: string; loggedIn?: boolean } | null = null;
     for (const base of ["api/", "../api/"]) {
       apiBase = base;
       const res = await fetch(api("status"), { credentials: "same-origin" }).catch(() => null);
@@ -42,6 +42,7 @@ export async function initStorage() {
     // Er staat een server naast de pagina: dan altijd daar opslaan, nooit stilletjes in de browser.
     storage.mode = "server";
     storage.loggedIn = !!s.loggedIn;
+    storage.open = !!s.open;
     if (s.setup) storage.problem = s.error ?? "De server is nog niet ingesteld.";
     else if (s.brand !== BRAND) storage.problem = `Het merk "${BRAND}" staat nog niet in api/config.php.`;
   } catch {
