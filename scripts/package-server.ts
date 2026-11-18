@@ -28,7 +28,7 @@ cpSync("server/api", `${out}/api`, { recursive: true, filter: (src) => !src.ends
 // Zoekmachines weghouden van de hele toolmap (pagina, API, foto's). Werkt op Apache/Plesk met mod_headers.
 writeFileSync(
   `${out}/.htaccess`,
-  `# Interne tool: niet opnemen in zoekmachines.\n<IfModule mod_headers.c>\n  Header set X-Robots-Tag "noindex, nofollow, noimageindex, noarchive"\n</IfModule>\nOptions -Indexes\n`,
+  `# Interne tool: niet opnemen in zoekmachines.\n<IfModule mod_headers.c>\n  Header set X-Robots-Tag "noindex, nofollow, noimageindex, noarchive"\n</IfModule>\n`,
 );
 mkdirSync(`${out}/data`, { recursive: true });
 cpSync("server/data/.htaccess", `${out}/data/.htaccess`);
