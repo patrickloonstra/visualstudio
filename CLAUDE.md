@@ -57,7 +57,7 @@ Succes na de eerste test: iemand van Vinchem maakt binnen een week zelf een post
 - Deploy: per merk in een map op de eigen site van de klant (Vinchem: `vinchem.nl/contenttool/`, `npm run build:server -- vinchem`), of meerdere merken onder één subdomein (`npm run build:server`)
 - Geen accounts en geen database. Wel een optionele flat-file-opslag in PHP (besluit Patrick, 2026-11-18): `server/api/index.php` bewaart posts als JSON en foto's als bestanden, met een toegangscode per merk (`config.php`, niet in git)
 - Opslag, twee standen die de tool zelf kiest: online met `api/` ernaast = server; los HTML-bestand = browser (IndexedDB). In beide: export/import als `.merkstudio.json`. Elke post is één `PostDoc` (tekst, foto, layout, thema, aanpassingen)
-- Toegangscode Vinchem staat voorlopig uit (`require_code => false` in de config op dev). Besluit Patrick 2026-11-18: weer aan zodra de eerste vrijwilliger van Vinchem meedoet
+- Toegangscode Vinchem staat voorlopig uit (`require_code => false` in de config op dev, besluit Patrick 2026-11-18). Wel onvindbaar voor zoekmachines: `noindex`-meta in `index.html`, `X-Robots-Tag` via `.htaccess` in de toolmap en in de API
 - Hosting: gewone PHP-host (Cloud86/Plesk), subdomein van patrickloonstra.nl. Zie `docs/online-zetten.md`; `npm run build:server` maakt de uploadmap
 
 ## Code (stand na fase 2)

@@ -25,6 +25,11 @@ if (single) cpSync(`dist/${single}/index.html`, `${out}/index.html`);
 else for (const b of brands) cpSync(`dist/${b}`, `${out}/${b}`, { recursive: true });
 
 cpSync("server/api", `${out}/api`, { recursive: true, filter: (src) => !src.endsWith("config.php") });
+// Zoekmachines weghouden van de hele toolmap (pagina, API, foto's). Werkt op Apache/Plesk met mod_headers.
+writeFileSync(
+  `${out}/.htaccess`,
+  `# Interne tool: niet opnemen in zoekmachines.\n<IfModule mod_headers.c>\n  Header set X-Robots-Tag "noindex, nofollow, noimageindex, noarchive"\n</IfModule>\nOptions -Indexes\n`,
+);
 mkdirSync(`${out}/data`, { recursive: true });
 cpSync("server/data/.htaccess", `${out}/data/.htaccess`);
 writeFileSync(`${out}/data/index.html`, "");
