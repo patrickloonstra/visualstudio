@@ -133,6 +133,7 @@ export function studioHtml() {
       <div class="st-canvas-wrap">
         <div class="st-canvas"></div>
         <ul class="st-issues"></ul>
+        <button type="button" class="btn st-dl-big" data-act="png" disabled>Download PNG</button>
       </div>
       <aside class="st-inspector" aria-label="Aanpassen"></aside>
     </div>
@@ -154,8 +155,8 @@ export function studioHtml() {
       <div class="st-head-row">
         <h3>Mijn posts</h3>
         <div class="st-lib-actions">
-          <button type="button" class="btn small ghost" data-act="export">Bewaar als bestand</button>
-          <label class="btn small ghost">Open bestand<input type="file" accept=".json,application/json" data-act="import" hidden></label>
+          <button type="button" class="link" data-act="export" title="Alle posts met foto's in één bestand, om te bewaren of op een andere computer te openen. Dit is geen afbeelding.">Back-up van alle posts (.json)</button>
+          <label class="link" title="Een eerder gemaakte back-up (.json) weer openen">Back-up terugzetten<input type="file" accept=".json,application/json" data-act="import" hidden></label>
           <button type="button" class="link" data-act="logout" hidden>Uitloggen</button>
         </div>
       </div>
@@ -300,7 +301,7 @@ function renderCanvas() {
   badge.className = "st-badge " + (S.issues.length ? "off" : "on");
   badge.textContent = S.issues.length ? `Niet on brand (${S.issues.length})` : "On brand ✓";
   $(".st-issues").innerHTML = S.issues.map((x) => `<li>${esc(x.msg)}</li>`).join("");
-  $<HTMLButtonElement>("[data-act=png]").disabled = S.issues.length > 0;
+  document.querySelectorAll<HTMLButtonElement>("[data-act=png]").forEach((b) => (b.disabled = S.issues.length > 0));
   $<HTMLButtonElement>("[data-act=undo]").disabled = S.history.length < 2;
 }
 
@@ -468,8 +469,8 @@ async function renderLibrary() {
     storage.mode === "server"
       ? `${n} opgeslagen op de server. ${storage.open ? "Iedereen met dit adres" : "Iedereen met de toegangscode"} ziet en bewerkt dezelfde posts.`
       : storage.persistent
-        ? `${n} bewaard in deze browser. Wil je verder op een andere computer? Kies Bewaar als bestand.`
-        : "Let op: deze browser bewaart niets (privévenster?). Kies Bewaar als bestand voordat je de pagina sluit.";
+        ? `${n} bewaard in deze browser. Wil je verder op een andere computer? Maak een back-up van alle posts.`
+        : "Let op: deze browser bewaart niets (privévenster?). Maak een back-up van alle posts voordat je de pagina sluit.";
   $("[data-act=logout]").hidden = storage.mode !== "server" || storage.open;
   const list = $(".st-posts");
   list.innerHTML = posts.length

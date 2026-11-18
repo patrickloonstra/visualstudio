@@ -11,7 +11,7 @@ Open de merkgids (`dist/<merk>/index.html`) en ga naar **Studio**.
 3. Klik een variant aan. In de editor klik je op een tekst of de foto om hem aan te passen: woorden, grootte (alleen stappen uit de typeschaal), kleur (alleen toegestane combinaties), positie (slepen). De foto sleep je binnen zijn kader.
 4. De badge zegt **On brand ✓** of noemt wat er mis is. Alleen als hij groen is kun je **Download PNG** gebruiken.
 
-**Opslaan gaat vanzelf.** Elke post staat onder **Mijn posts** in deze browser. Wil je verder op een andere computer, of een back-up? Kies **Bewaar als bestand** (`.merkstudio.json`) en later **Open bestand**.
+**Opslaan gaat vanzelf.** Elke post staat onder **Mijn posts** in deze browser. Wil je verder op een andere computer, of een back-up? Kies **Back-up van alle posts (.json)** en later **Back-up terugzetten**. Een back-up is geen afbeelding; de afbeelding krijg je met **Download PNG** onder de post.
 
 Let op: posts in de browser zijn per browser en per computer. Wie de browsergegevens wist, is ze kwijt. Bewaar belangrijke posts dus ook als bestand.
 
@@ -49,7 +49,7 @@ npm run post -- brands/vinchem/posts/2026-06-vlotten
 
 Resultaat in dezelfde map:
 - `variant-1.png` tot `variant-6.png`: alleen varianten die on brand zijn.
-- `<map>.merkstudio.json`: open dit in de studio (**Mijn posts > Open bestand**) om een variant verder aan te passen.
+- `<map>.merkstudio.json`: open dit in de studio (**Mijn posts > Back-up terugzetten**) om een variant verder aan te passen.
 
 Weet je al welke layout en kleur je wilt? Zet `"layout": "a", "theme": "groen"` in `post.json`; dan maakt het script één `post.png`. Optioneel: `"photoPos": { "x": 50, "y": 30, "zoom": 1.2 }` om de foto te verschuiven.
 
@@ -57,4 +57,4 @@ Alles staat in de repo, dus Claude kan een post later aanpassen door `post.json`
 
 ## 3. Uit een bestand
 
-Een `.merkstudio.json` (van de studio of het script) open je in **Mijn posts > Open bestand**. De posts komen in je lijst en zijn volledig te bewerken.
+Een `.merkstudio.json` (van de studio of het script) open je in **Mijn posts > Back-up terugzetten**. De posts komen in je lijst en zijn volledig te bewerken.

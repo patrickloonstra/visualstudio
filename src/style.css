@@ -430,3 +430,8 @@ button { font: inherit; cursor: pointer; }
 .pick-date { position: relative; display: inline-flex !important; align-items: center; gap: 6px; font-size: 13px !important; font-weight: 700; padding: 5px 12px; border-radius: 999px; background: var(--primary); color: var(--on-primary) !important; cursor: pointer; }
 .pick-date::before { content: "📅"; }
 .pick-date input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; padding: 0 !important; border: 0 !important; }
+.st-dl-big { font-size: 18px; padding: 14px 32px; background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
+.st-dl-big:disabled { opacity: .4; }
+.st-lib-actions { align-items: center; gap: 16px; }
+.st-lib-actions label.link { cursor: pointer; }
+.st-post .a { flex-wrap: wrap; column-gap: 10px; } .st-post .a .link { white-space: nowrap; }
