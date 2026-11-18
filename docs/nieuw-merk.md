@@ -32,8 +32,8 @@ Een merk is één map in `brands/`. De code hoeft niet te veranderen.
 | `pairs` | Toegestane combinaties `bg`/`fg`. `"use": "large"` = alleen koppen (3:1) | Patrick, check bewaakt WCAG |
 | `ui` | Welke merkkleur de gids zelf gebruikt: `primary`, `onPrimary`, `surface`, `paper`, `line`, `ink`, `highlight` | Patrick |
 | `fonts` | `heading` en `body`: `family`, `file`, `italic`, `weights`, `use` | Patrick |
-| `logos` | Per logo: `kind` (`logo` of `mark`), `file`, `sourceFill`, `colorways`, `minWidth`. Optioneel `inner` om twee SVG's te combineren | Patrick |
-| `postMark` | Welk logo op elke post komt | Patrick |
+| `logos` | Per logo: `kind` (`logo` of `mark`), `file`, `sourceFill`, `colorways`, `minWidth`. Elk logo is één los bestand | Patrick |
+| `postMarks` | Keuzes voor het merkteken op een post: één logo, of een logo met een tweede logo in het midden (`inner`, `innerScale`). `scale` = grootte t.o.v. `markSize`. De eerste is standaard | Patrick |
 | `clearSpace` | Vrije ruimte rond het logo en minimale printmaat | Patrick |
 | `themes` | Kleurthema's voor posts: `bg`, `head`, `text`, `mark`. Eén thema met `"primary": true` | Patrick, check bewaakt de paren |
 | `formats` | Formaten met `w`, `h`, `margin`, `markSize` en `layouts` (posities in px op ware grootte) | Uit `design.md` |

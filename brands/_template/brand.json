@@ -118,7 +118,6 @@
       "note": ""
     }
   ],
-  "postMark": "logo",
   "clearSpace": {
     "draft": true,
     "ratio": 0.25,
@@ -437,5 +436,13 @@
     "rules": [],
     "examples": []
   },
-  "dosDonts": []
+  "dosDonts": [],
+  "postMarks": [
+    {
+      "id": "logo",
+      "label": "Logo",
+      "logo": "logo",
+      "scale": 1
+    }
+  ]
 }

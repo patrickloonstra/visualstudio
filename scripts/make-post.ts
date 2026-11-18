@@ -6,7 +6,8 @@
 //   { "type": "opkomst", "format": "ig45",
 //     "fields": { "kicker": "", "head": "", "sub": "", "details": "", "cta": "" },
 //     "photo": "foto.jpg", "photoPos": { "x": 50, "y": 50, "zoom": 1 },
-//     "layout": "a", "theme": "groen" }        <- layout/theme optioneel
+//     "layout": "a", "theme": "groen",          <- layout/theme optioneel
+//     "mark": "stempel-logo" }                  <- merkteken optioneel (brand.json > postMarks)
 //
 // Zonder layout/theme: tot 6 passende varianten (variant-1.png ...). Met: één post.png.
 // Schrijft ook <map>.merkstudio.json: open die in de studio (Mijn posts > Open bestand) om verder te bewerken.
@@ -25,7 +26,7 @@ const { chromium } = createRequire(import.meta.url)("playwright") as {
   chromium: { launch(): Promise<{ newPage(): Promise<Page>; close(): Promise<void> }> };
 };
 type Rendered = { doc: { layout: string; theme: string }; png: string; issues: { msg: string }[] };
-type Input = { type: string; format?: string; fields: Record<string, string>; photo?: string; photoPos?: object; layout?: string; theme?: string };
+type Input = { type: string; format?: string; mark?: string; fields: Record<string, string>; photo?: string; photoPos?: object; layout?: string; theme?: string };
 
 const dir = resolve(process.argv[2] ?? "");
 const brand = process.env.BRAND ?? dir.split("/brands/")[1]?.split("/")[0] ?? "vinchem";
@@ -51,6 +52,7 @@ const result: Rendered[] = await page.evaluate(
     const ms = window.merkstudio;
     const base = ms.newDoc(input.type, input.fields);
     if (input.format) base.format = input.format;
+    if (input.mark) base.mark = input.mark;
     base.photo = photo ? { src: photo, x: 50, y: 50, zoom: 1, ...input.photoPos } : null;
     const candidates = input.layout ? [{ ...base, layout: input.layout, theme: input.theme ?? base.theme }] : ms.variants(base);
     const out: Rendered[] = [];

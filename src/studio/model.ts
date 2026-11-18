@@ -28,6 +28,8 @@ export type PostDoc = {
   /** data-URL (studio) of pad naast post.json (script). */
   photo: { src: string; x: number; y: number; zoom: number } | null;
   overrides: Partial<Record<Role | "block", ElementOverride>>;
+  /** Merkteken op de post (id uit brand.json > postMarks). Leeg = het eerste. */
+  mark?: string;
 };
 
 export const ROLES: Role[] = ["kicker", "head", "sub", "details", "cta"];

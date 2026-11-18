@@ -25,7 +25,7 @@ Buitenmarge in px op het basisformaat. Regels voor wat tot de rand mag.
 Per layout: naam, positie en maat van foto, tekstvak en merkteken (in px op ware grootte). Minstens één met en één zonder foto.
 
 ## Merkteken
-Welk logo op de post komt (`postMark`), hoe groot (`markSize`) en waar ten opzichte van de foto.
+Welke merktekens op een post te kiezen zijn (`postMarks`), hoe groot (`markSize`) en waar ten opzichte van de foto.
 
 ## Formaten
 Welke formaten, en wat er per formaat verandert.

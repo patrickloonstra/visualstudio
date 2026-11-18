@@ -5,6 +5,7 @@ import {
   type PostDoc, type Role,
 } from "./model";
 import { check, fileSlug, fit, postHtml, renderPng, type Issue } from "./render";
+import { postMarks } from "../logos";
 import { deletePost, downloadFile, importFile, initStorage, listPosts, login, logout, savePost, storage } from "./store";
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
@@ -285,6 +286,9 @@ function inspectorPost(d: PostDoc) {
     <div class="ins-block"><span class="ins-label">Kleur</span>
       <div class="pills">${B.themes.map((t) => `<button type="button" class="pill theme${t.id === d.theme ? " on" : ""}" data-theme="${t.id}"><i style="background:${color(t.bg).hex}"></i>${esc(t.label)}</button>`).join("")}</div>
     </div>
+    <div class="ins-block"><span class="ins-label">Merkteken</span>
+      <div class="pills">${postMarks().map((m) => `<button type="button" class="pill${(d.mark ?? postMarks()[0].id) === m.id ? " on" : ""}" data-mark="${m.id}">${esc(m.label)}</button>`).join("")}</div>
+    </div>
     <div class="ins-block"><span class="ins-label">Foto</span>
       <label class="btn small ghost">${d.photo ? "Andere foto" : "Foto toevoegen"}<input type="file" accept="image/*" data-act="photo" hidden></label>
       ${d.photo ? `<button type="button" class="link" data-act="nophoto">Foto weghalen</button>` : ""}
@@ -545,6 +549,7 @@ export function mountStudio(root: HTMLElement) {
     // Inspectie-acties
     if (el.dataset.select) return select(el.dataset.select as Role);
     if (act === "deselect") return select(null);
+    if (el.dataset.mark) return update((x) => (x.mark = el.dataset.mark), { inspector: true });
     if (el.dataset.layout) return update((x) => ((x.layout = el.dataset.layout!), (x.overrides = {})), { inspector: true });
     if (el.dataset.theme) return update((x) => ((x.theme = el.dataset.theme!), ROLES.forEach((r) => delete x.overrides[r]?.color)), { inspector: true });
     if (act === "reset") return update((x) => (x.overrides = {}), { inspector: true });

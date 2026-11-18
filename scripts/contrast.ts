@@ -32,7 +32,14 @@ export function checkBrand(brandDir: string): { errors: string[]; report: string
   }
   for (const t of brand.themes ?? []) ["bg", "head", "text", "mark"].forEach((x) => known(t[x], `Thema ${t.id}.${x}`));
   if (brand.themes && !brand.themes.some((t: { primary?: boolean }) => t.primary)) errors.push(`themes: zet bij één thema "primary": true`);
-  if (brand.postMark && !(brand.logos ?? []).some((l: { id: string }) => l.id === brand.postMark)) errors.push(`postMark "${brand.postMark}" is geen logo-id`);
+  const logoIds = new Map((brand.logos ?? []).map((l: { id: string; colorways: string[] }) => [l.id, l.colorways ?? []]));
+  for (const m of brand.postMarks ?? []) {
+    for (const id of [m.logo, m.inner].filter(Boolean)) {
+      if (!logoIds.has(id)) errors.push(`postMarks ${m.id}: "${id}" is geen logo-id`);
+      // Elke themakleur voor het merkteken moet een kleurvariant van dat logo zijn.
+      else for (const t of brand.themes ?? []) if (!(logoIds.get(id) as string[]).includes(t.mark)) errors.push(`postMarks ${m.id}: logo "${id}" heeft geen kleurvariant "${t.mark}" (thema ${t.id})`);
+    }
+  }
   const steps = new Set((brand.typeSteps ?? []).map((s: [string, string]) => s[0]));
   for (const [role, st] of Object.entries<{ sizes: string[] }>(brand.styles ?? {}))
     st.sizes.forEach((sz) => !steps.has(sz) && errors.push(`Stijl ${role}: grootte "${sz}" staat niet in typeSteps`));
