@@ -189,7 +189,7 @@ button { font: inherit; cursor: pointer; }
 .st-work[hidden], .st-variants-wrap[hidden], .st-empty[hidden], .st-badge[hidden] { display: none; }
 .st-canvas-wrap { display: grid; justify-items: center; gap: 12px; min-width: 0; }
 .st-canvas, .st-thumb { position: relative; overflow: hidden; border-radius: 4px; }
-.st-canvas { box-shadow: 0 12px 40px rgb(0 0 0 / .18); touch-action: none; user-select: none; }
+.st-canvas { box-shadow: 0 0 0 1px var(--line); touch-action: none; user-select: none; }
 .st-issues { margin: 0; padding: 0; list-style: none; width: 100%; max-width: 560px; display: grid; gap: 6px; }
 .st-issues li { background: var(--highlight); padding: 8px 12px; border-radius: 8px; font-size: 15px; }
 
@@ -353,7 +353,7 @@ button { font: inherit; cursor: pointer; }
 
 .in-use { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
 .iu { margin: 0; }
-.iu-post { position: relative; overflow: hidden; border-radius: 6px; box-shadow: 0 10px 30px rgb(0 0 0 / .15); }
+.iu-post { position: relative; overflow: hidden; border-radius: 6px; box-shadow: 0 0 0 1px var(--line); }
 .iu figcaption { margin-top: 10px; font-size: 15px; }
 
 .band { background: var(--primary); color: var(--on-primary); }
