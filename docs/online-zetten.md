@@ -90,3 +90,17 @@ Er staan foto's op de server, mogelijk van kinderen. Daarom:
 - wordt na 10 foute inlogpogingen per kwartier geblokkeerd.
 
 Spreek met Vinchem af wie de toegangscode krijgt, en wissel hem als iemand stopt (nieuwe hash in `config.php`).
+
+## Variant C: via git naar dev.patrickloonstra.nl (zo staat het nu)
+
+Plesk (Cloud86) publiceert de privé-repo `patrickloonstra/dev` naar `dev.patrickloonstra.nl`. De tool staat in `dev/vinchem/`.
+
+Bijwerken na een wijziging in deze repo:
+
+```bash
+npm run build:server -- vinchem
+```
+
+Kopieer daarna de inhoud van `dist/server/` naar `vinchem/` in de repo `dev` en houd daarbij `vinchem/api/config.php` intact. Commit en push naar `main`. Plesk haalt de wijziging op via de webhook, of met **Pull updates** in Plesk > Git.
+
+Data staat op `/var/www/vhosts/patrickloonstra.nl/merkstudio-data/` en wordt door een publicatie niet aangeraakt.
