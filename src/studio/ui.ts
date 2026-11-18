@@ -617,7 +617,7 @@ export function mountStudio(root: HTMLElement) {
     }
   });
 
-  initStorage().then(() => (storage.mode === "server" && !storage.loggedIn ? showLogin() : start()));
+  initStorage().then(() => (storage.mode === "server" && (!storage.loggedIn || storage.problem) ? showLogin() : start()));
 }
 
 async function start() {
@@ -638,6 +638,11 @@ function setLocked(locked: boolean) {
 function showLogin() {
   setLocked(true);
   $(".st-login").hidden = false;
+  if (storage.problem) {
+    $(".st-login-err").textContent = storage.problem + " Opslaan kan pas als dat geregeld is (zie docs/online-zetten.md).";
+    $<HTMLButtonElement>(".st-login button").disabled = true;
+    return;
+  }
   $<HTMLInputElement>(".st-login input[name=code]").focus({ preventScroll: true });
 }
 

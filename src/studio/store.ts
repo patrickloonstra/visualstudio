@@ -7,7 +7,7 @@ import { B, type PostDoc } from "./model";
 declare const __BRAND_ID__: string;
 const BRAND = typeof __BRAND_ID__ === "string" ? __BRAND_ID__ : B.short.toLowerCase();
 
-export const storage = { mode: "local" as "local" | "server", loggedIn: false, persistent: true };
+export const storage = { mode: "local" as "local" | "server", loggedIn: false, persistent: true, problem: "" };
 
 // ---------- Server ----------
 const api = (action: string, extra = "") => new URL(`../api/?action=${action}&brand=${encodeURIComponent(BRAND)}${extra}`, location.href).toString();
@@ -31,10 +31,12 @@ export async function initStorage() {
   try {
     const res = await fetch(api("status"), { credentials: "same-origin" });
     const s = await res.json();
-    if (s?.server && s.brand === BRAND) {
-      storage.mode = "server";
-      storage.loggedIn = !!s.loggedIn;
-    }
+    if (!s?.server) return;
+    // Er staat een server naast de pagina: dan altijd daar opslaan, nooit stilletjes in de browser.
+    storage.mode = "server";
+    storage.loggedIn = !!s.loggedIn;
+    if (s.setup) storage.problem = s.error ?? "De server is nog niet ingesteld.";
+    else if (s.brand !== BRAND) storage.problem = `Het merk "${BRAND}" staat nog niet in api/config.php.`;
   } catch {
     /* geen server: lokaal */
   }

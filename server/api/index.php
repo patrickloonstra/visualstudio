@@ -10,6 +10,13 @@
  */
 declare(strict_types=1);
 
+if (!is_file(__DIR__ . '/config.php')) {
+    // Nog niet ingesteld: luid melden, zodat de studio niet stilletjes in de browser gaat opslaan.
+    http_response_code(503);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['server' => true, 'setup' => true, 'error' => 'De server is nog niet ingesteld: api/config.php ontbreekt.']);
+    exit;
+}
 $config = require __DIR__ . '/config.php';
 $dataDir = rtrim($config['data_dir'] ?? (__DIR__ . '/../data'), '/');
 
@@ -98,7 +105,7 @@ switch ($action) {
     case 'status': {
         $brand = (string)($_GET['brand'] ?? '');
         $known = preg_match(BRAND_RE, $brand) && isset($config['brands'][$brand]);
-        out(200, ['server' => true, 'brand' => $known ? $brand : null, 'loggedIn' => $known && (in_array($brand, $_SESSION['brands'] ?? [], true) || !empty($_SESSION['admin']))]);
+        out(200, ['server' => true, 'setup' => false, 'brand' => $known ? $brand : null, 'loggedIn' => $known && (in_array($brand, $_SESSION['brands'] ?? [], true) || !empty($_SESSION['admin']))]);
     }
 
     case 'login': {
