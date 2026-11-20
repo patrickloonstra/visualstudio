@@ -16,13 +16,18 @@ Alles komt als **concept** in Buffer. Daar keurt iemand het goed en plant het in
 
 ## Eenmalig instellen (door Patrick)
 
-Zet de sleutel in `api/config.php` op de server:
+Zet de sleutel in een apart bestand `merkstudio-secrets.php`, **naast** de webmap (dus niet erin). Bij dev.patrickloonstra.nl is dat `/var/www/vhosts/patrickloonstra.nl/merkstudio-secrets.php`, in dezelfde map als `merkstudio-data/`. Git-publicaties raken dit bestand nooit aan, en het is niet via internet bereikbaar.
 
 ```php
-'buffer' => [
-    'vinchem' => ['api_key' => 'DE_SLEUTEL'],
-],
+<?php
+return [
+    'buffer' => [
+        'vinchem' => ['api_key' => 'DE_SLEUTEL'],
+    ],
+];
 ```
+
+Zet de sleutel niet in `api/config.php`: dat bestand staat in git en wordt bij elke publicatie overschreven.
 
 `organization_id` mag leeg blijven: de tool neemt dan de eerste organisatie van het account. De knop **Naar Buffer** verschijnt pas als de sleutel er staat.
 

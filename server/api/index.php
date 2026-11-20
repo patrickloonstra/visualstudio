@@ -18,6 +18,13 @@ if (!is_file(__DIR__ . '/config.php')) {
     exit;
 }
 $config = require __DIR__ . '/config.php';
+// Geheimen (zoals de Buffer-sleutel) in een apart bestand NAAST de webmap: git-publicaties overschrijven het nooit
+// en het is niet via internet bereikbaar. Inhoud: <?php return ['buffer' => ['vinchem' => ['api_key' => '...']]];
+$secretsFile = dirname((string)($_SERVER['DOCUMENT_ROOT'] ?? dirname(__DIR__, 2))) . '/merkstudio-secrets.php';
+if (is_file($secretsFile)) {
+    $secrets = require $secretsFile;
+    if (is_array($secrets)) $config = array_replace_recursive($config, $secrets);
+}
 $dataDir = rtrim($config['data_dir'] ?? (dirname((string)($_SERVER['DOCUMENT_ROOT'] ?? dirname(__DIR__, 2))) . '/merkstudio-data'), '/');
 // Ligt de data toch binnen de website? Dan in elk geval de map afschermen voor Apache.
 $docRoot = realpath((string)($_SERVER['DOCUMENT_ROOT'] ?? '')) ?: null;
