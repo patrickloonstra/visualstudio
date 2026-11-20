@@ -59,6 +59,7 @@ Succes na de eerste test: iemand van Vinchem maakt binnen een week zelf een post
 - Opslag, twee standen die de tool zelf kiest: online met `api/` ernaast = server; los HTML-bestand = browser (IndexedDB). In beide: export/import als `.merkstudio.json`. Elke post is één `PostDoc` (tekst, foto, layout, thema, aanpassingen)
 - Toegangscode Vinchem staat voorlopig uit (`require_code => false` in de config op dev, besluit Patrick 2026-11-18). Wel onvindbaar voor zoekmachines: `noindex`-meta in `index.html`, `X-Robots-Tag` via `.htaccess` in de toolmap en in de API
 - Hosting: gewone PHP-host (Cloud86/Plesk), subdomein van patrickloonstra.nl. Zie `docs/online-zetten.md`; `npm run build:server` maakt de uploadmap
+- Publiceren naar dev.patrickloonstra.nl: via de repo `patrickloonstra/dev` (voeg die toe aan de sessie). Daar staan `CLAUDE.md`, de skill `publish-dev` en `./publish.sh`. Voor dit project: `npm run build:server -- vinchem` en dan `./publish.sh ../visualstudio/dist/server vinchem "<omschrijving>"`
 
 ## Code (stand na fase 2)
 - `src/main.ts`: opstart. Zet kleuren uit `brand.json` als CSS-variabelen: `--c-<id>` en paginarollen `--primary`, `--on-primary`, `--surface`, `--paper`, `--line`, `--ink`, `--highlight` (uit `brand.json > ui`). CSS gebruikt alleen die rollen, nooit merknamen
