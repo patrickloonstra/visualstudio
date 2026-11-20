@@ -64,6 +64,8 @@ Succes na de eerste test: iemand van Vinchem maakt binnen een week zelf een post
 - `src/main.ts`: opstart. Zet kleuren uit `brand.json` als CSS-variabelen: `--c-<id>` en paginarollen `--primary`, `--on-primary`, `--surface`, `--paper`, `--line`, `--ink`, `--highlight` (uit `brand.json > ui`). CSS gebruikt alleen die rollen, nooit merknamen
 - `src/guide.ts`: de pagina. Opent direct op de studio ("Maak een post"); `#stijlgids` toont een korte stijlgids (logo's, kleuren, regels, zip). Bewust compact: gebruikers zijn scoutingmensen, geen designers (Patrick, 2026-11-18)
 - Fotobank: `#fotobank`, gedeelde voorraad foto's per merk op de server (`api/?action=bank-*`). Kiezen kopieert de foto naar de post. Alleen online
+- Buffer: knop **Naar Buffer** stuurt de post als concept in 4:5 (IG/FB post) en 9:16 (story) naar het Buffer-account van het merk. Sleutel in `config.php > buffer`, PNG's in `exports/` naast de tool (openbaar, onraadbare naam). Zie `docs/buffer.md`
+- Formaten: `ig45` (4:5) en `ig916` (story 9:16, layouts afgeleid van 4:5 met 250 px vrij boven en onder)
 - Posts met twee foto's: layouts met `photo2` (groot + klein); PostDoc heeft `photo2`
 - `src/logos.ts`: logo's als losse SVG's; `markSvg` stelt het merkteken op een post samen uit `brand.json > postMarks`
 - `src/studio/model.ts` (PostDoc, varianten, tekst verdelen), `render.ts` (post renderen, tekst passend maken, merkregels checken, PNG), `ui.ts` (briefing, varianten, editor, Mijn posts), `store.ts` (IndexedDB en bestand)

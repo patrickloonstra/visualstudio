@@ -19,6 +19,13 @@ return [
         'vinchem' => '$2y$10$VERVANG_DOOR_HASH',
     ],
 
+    // Buffer (optioneel): posts als concept naar Buffer sturen.
+    // api_key: Buffer > Settings > API (publish.buffer.com/settings/api), van het Buffer-account van het merk.
+    // organization_id is optioneel: leeg = de eerste organisatie van het account. Zie docs/buffer.md.
+    'buffer' => [
+        // 'vinchem' => ['api_key' => 'PLAK_HIER_DE_SLEUTEL'],
+    ],
+
     // Beheercode voor Patrick: werkt bij elk merk.
     'admin_hash' => '$2y$10$VERVANG_DOOR_HASH',
 ];

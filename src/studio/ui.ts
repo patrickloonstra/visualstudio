@@ -6,7 +6,7 @@ import {
 } from "./model";
 import { check, fileSlug, fit, postHtml, renderPng, type Issue } from "./render";
 import { postMarks } from "../logos";
-import { bankAvailable, bankDelete, bankList, bankUpload, deletePost, downloadFile, importFile, initStorage, listPosts, login, logout, savePost, storage, type BankPhoto } from "./store";
+import { bankAvailable, bankDelete, bankList, bankUpload, bufferChannels, bufferSend, deletePost, downloadFile, importFile, initStorage, listPosts, login, logout, savePost, storage, type BankPhoto, type BufferChannel, type BufferTarget } from "./store";
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 const $ = <T extends HTMLElement = HTMLElement>(sel: string, root: ParentNode = document) => root.querySelector<T>(sel)!;
@@ -137,7 +137,10 @@ export function studioHtml() {
       <div class="st-canvas-wrap">
         <div class="st-canvas"></div>
         <ul class="st-issues"></ul>
-        <button type="button" class="btn st-dl-big" data-act="png" disabled>Download PNG</button>
+        <div class="st-dl-row">
+          <button type="button" class="btn st-dl-big" data-act="png" disabled>Download PNG</button>
+          <button type="button" class="btn st-buffer" data-act="buffer" hidden>Naar Buffer</button>
+        </div>
       </div>
       <aside class="st-inspector" aria-label="Aanpassen"></aside>
     </div>
@@ -168,6 +171,18 @@ export function studioHtml() {
       <div class="st-posts"></div>
     </div>
 
+    <dialog class="buffer-dlg" aria-labelledby="buffer-title">
+      <div class="buffer-in">
+        <div class="brief-top"><h3 id="buffer-title">Naar Buffer</h3><button type="button" class="link" data-act="buffer-close">Sluiten</button></div>
+        <p class="brief-intro">De post gaat als <strong>concept</strong> naar Buffer. Daar keur je hem goed en plan je hem in. Er gaat niets vanzelf online.</p>
+        <div class="buffer-previews"></div>
+        <label class="buffer-caption">Tekst bij de post<textarea rows="5" maxlength="2200" data-buffer-caption></textarea></label>
+        <fieldset class="buffer-targets"><legend>Waarheen?</legend><div data-buffer-targets></div></fieldset>
+        <p class="buffer-msg" role="status"></p>
+        <div class="brief-actions"><button type="button" class="btn small dark" data-act="buffer-send">Als concept naar Buffer</button></div>
+      </div>
+    </dialog>
+
     <dialog class="bank-pick" aria-labelledby="bank-pick-title">
       <div class="bank-pick-in">
         <div class="brief-top"><h3 id="bank-pick-title">Kies een foto</h3><button type="button" class="link" data-act="bank-pick-close">Sluiten</button></div>
@@ -189,6 +204,8 @@ export function studioHtml() {
           <button type="button" class="btn small ghost" data-act="split">Verdeel over de velden</button>
         </details>
         ${field("kicker")}${field("head")}${field("sub")}${field("details", true)}${field("cta")}
+        <label>Tekst bij de post <small>(optioneel, voor Instagram/Facebook)</small><span class="hint">De tekst onder de afbeelding, met hashtags</span>
+          <textarea name="caption" rows="3" maxlength="2200"></textarea></label>
         <div class="brief-grid">
           <div class="brief-photo"><label>Foto 1 <small>(groot, optioneel)</small><input type="file" name="photo" accept="image/*"></label>
             <button type="button" class="link bank-only" data-act="bank-brief" data-key="photo">Uit fotobank</button> <span class="picked" data-picked="photo"></span></div>
@@ -216,6 +233,7 @@ function fillBrief(d: PostDoc | null) {
   (form.elements.namedItem("type") as HTMLSelectElement).value = src.type;
   (form.elements.namedItem("format") as HTMLSelectElement).value = src.format;
   ROLES.forEach((r) => ((form.elements.namedItem(r) as HTMLInputElement).value = d ? src.fields[r] : ""));
+  (form.elements.namedItem("caption") as HTMLTextAreaElement).value = d?.caption ?? "";
   ROLES.forEach((r) => ((form.elements.namedItem(r) as HTMLInputElement).placeholder = newDoc(src.type).fields[r] || ""));
   briefPhoto = d?.photo ?? null;
   briefPhoto2 = d?.photo2 ?? null;
@@ -245,6 +263,7 @@ function readBrief(): PostDoc {
   // Alleen foto 2 gekozen? Dan wordt die de grote foto.
   if (!d.photo && briefPhoto2) d.photo = { ...briefPhoto2 };
   else d.photo2 = briefPhoto2 ? { ...briefPhoto2 } : null;
+  d.caption = v("caption").trim();
   if (briefMode === "edit" && S.doc) {
     // Aanpassen: dezelfde post bijwerken. Nieuw: nieuw id, de vorige post blijft staan.
     d.id = S.doc.id;
@@ -595,6 +614,9 @@ export function mountStudio(root: HTMLElement) {
     if (!el || (el as HTMLButtonElement).disabled) return;
     const act = el.dataset.act;
     const d = S.doc;
+    if (act === "buffer" && d) return openBuffer(d);
+    if (act === "buffer-close") return $<HTMLDialogElement>(".buffer-dlg").close();
+    if (act === "buffer-send" && d) return sendBuffer(d, el as HTMLButtonElement);
     if (act === "bank-brief" || act === "bank-ins") {
       const key = el.dataset.key as PhotoKey;
       const picked = await pickFromBank();
@@ -801,6 +823,7 @@ export function mountStudio(root: HTMLElement) {
 
 async function start() {
   await renderLibrary();
+  loadBufferChannels();
   if (location.hash === "#fotobank") renderBank();
   // Laatst bewerkte post weer openen.
   if (cache[0] && !S.doc) openPostQuiet(cache[0]);
@@ -932,4 +955,93 @@ export function mountBank(root: HTMLElement) {
     await bankDelete(del);
     renderBank();
   });
+}
+
+
+// ---------- Buffer ----------
+let bufferList: BufferChannel[] = [];
+/** Formaat per soort: feed-post in 4:5, story in 9:16 (ids uit brand.json > formats). */
+const FORMAT_FOR = { post: "ig45", story: "ig916" } as const;
+
+async function loadBufferChannels() {
+  try {
+    const r = await bufferChannels();
+    bufferList = r.channels;
+    document.querySelectorAll<HTMLElement>("[data-act=buffer]").forEach((b) => (b.hidden = !r.configured));
+  } catch {
+    /* geen Buffer: knop blijft verborgen */
+  }
+}
+
+/** Rendert de post in een ander formaat (zelfde layout en kleuren). */
+async function renderAs(d: PostDoc, format: string) {
+  const copy: PostDoc = { ...structuredClone(d), format };
+  if (!fmt(format).layouts.some((l) => l.id === copy.layout)) copy.layout = layoutsFor(copy)[0].id;
+  return renderPng(copy);
+}
+
+async function openBuffer(d: PostDoc) {
+  const dlg = $<HTMLDialogElement>(".buffer-dlg");
+  const msg = dlg.querySelector<HTMLElement>(".buffer-msg")!;
+  msg.textContent = "";
+  dlg.querySelector<HTMLTextAreaElement>("[data-buffer-caption]")!.value = d.caption ?? [d.fields.head, d.fields.sub, d.fields.details, d.fields.cta].filter(Boolean).join("\n");
+  const prev = dlg.querySelector<HTMLElement>(".buffer-previews")!;
+  prev.innerHTML = `<p class="ins-note">Afbeeldingen maken…</p>`;
+  const targets = dlg.querySelector<HTMLElement>("[data-buffer-targets]")!;
+  targets.innerHTML = bufferList.length
+    ? bufferList
+        .flatMap((c) =>
+          (["post", "story"] as const).map((kind) => {
+            const label = `${c.service === "instagram" ? "Instagram" : "Facebook"} ${kind === "post" ? "post (4:5)" : "story (9:16)"} · ${esc(c.displayName || c.name)}`;
+            const on = kind === "post" || c.service === "instagram";
+            return `<label class="buffer-target"><input type="checkbox" data-channel="${c.id}" data-service="${c.service}" data-type="${esc(c.type)}" data-kind="${kind}" ${on ? "checked" : ""}> ${label}</label>`;
+          }),
+        )
+        .join("")
+    : `<p class="ins-note">Er zijn nog geen Instagram- of Facebook-kanalen gekoppeld in Buffer.</p>`;
+  dlg.showModal();
+
+  // Voorbeelden van beide formaten, met eventuele merkfouten.
+  const out: string[] = [];
+  bufferImages = {};
+  for (const [kind, format] of Object.entries(FORMAT_FOR)) {
+    const { png, issues } = await renderAs(d, format);
+    bufferImages[format] = issues.length ? "" : png;
+    out.push(`<figure class="buffer-prev"><img src="${png}" alt=""><figcaption>${kind === "post" ? "Post 4:5" : "Story 9:16"}${issues.length ? `<br><span class="bad">Niet on brand: ${esc(issues[0].msg)}</span>` : ""}</figcaption></figure>`);
+    if (issues.length) targets.querySelectorAll<HTMLInputElement>(`[data-kind="${kind}"]`).forEach((i) => ((i.checked = false), (i.disabled = true)));
+  }
+  prev.innerHTML = out.join("");
+}
+let bufferImages: Record<string, string> = {};
+
+async function sendBuffer(d: PostDoc, btn: HTMLButtonElement) {
+  const dlg = $<HTMLDialogElement>(".buffer-dlg");
+  const msg = dlg.querySelector<HTMLElement>(".buffer-msg")!;
+  const caption = dlg.querySelector<HTMLTextAreaElement>("[data-buffer-caption]")!.value.trim();
+  const picked = [...dlg.querySelectorAll<HTMLInputElement>("[data-channel]:checked")];
+  if (!picked.length) return void (msg.textContent = "Kies minstens één kanaal.");
+  const targets: BufferTarget[] = picked.map((i) => ({
+    channelId: i.dataset.channel!,
+    service: i.dataset.service!,
+    kind: i.dataset.kind as "post" | "story",
+    format: FORMAT_FOR[i.dataset.kind as "post" | "story"],
+    // Een persoonlijk Instagram-profiel kan alleen via een herinnering op je telefoon.
+    notification: i.dataset.service === "instagram" && i.dataset.type === "profile",
+  }));
+  const images: Record<string, string> = {};
+  for (const t of targets) if (bufferImages[t.format]) images[t.format] = bufferImages[t.format];
+  btn.disabled = true;
+  msg.textContent = "Bezig met versturen…";
+  try {
+    if (caption !== (d.caption ?? "")) update((x) => (x.caption = caption), { history: false });
+    const results = await bufferSend(caption, images, targets);
+    const ok = results.filter((r) => r.ok).length;
+    msg.innerHTML = ok === results.length
+      ? `${ok} ${ok === 1 ? "concept staat" : "concepten staan"} in Buffer. Keur ${ok === 1 ? "hem" : "ze"} daar goed en plan ${ok === 1 ? "hem" : "ze"} in.`
+      : `${ok} van ${results.length} gelukt.<br>${results.filter((r) => !r.ok).map((r) => esc(r.error ?? "")).join("<br>")}`;
+  } catch (err) {
+    msg.textContent = `Versturen mislukt: ${err instanceof Error ? err.message : "onbekende fout"}`;
+  } finally {
+    btn.disabled = false;
+  }
 }

@@ -40,6 +40,8 @@ export type PostDoc = {
   overrides: Partial<Record<Role | "block", ElementOverride>>;
   /** Merkteken op de post (id uit brand.json > postMarks). Leeg = het eerste. */
   mark?: string;
+  /** Tekst onder de post op Instagram/Facebook (caption), voor Buffer. */
+  caption?: string;
   /** Deel van de stempel dat over de foto valt (bijv. 1/3 of 2/3) en de draaiing in graden. */
   markOverlap?: number;
   markRotate?: number;

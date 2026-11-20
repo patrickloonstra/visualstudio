@@ -81,9 +81,13 @@ Upload je twee foto's, dan toont de studio alleen deze layouts (groot + klein, d
 
 ## Formaten
 
-Nu alleen Instagram 4:5. Volgen (fase 3): story 9:16, vierkant 1:1, header 1,91:1, poster A4 (PDF).
+- Instagram/Facebook post 4:5 (1080 × 1350): de layouts hierboven.
+- Story 9:16 (1080 × 1920): dezelfde layouts, verticaal geschaald binnen 250 px vrije ruimte boven en onder (daar legt Instagram zijn knoppen overheen). Gebruikt voor Instagram- en Facebook-stories via Buffer.
+- Nog niet: vierkant 1:1, header 1,91:1, poster A4 (PDF).
 
 ## Besluiten
+
+- 2026-11-20: Naar Buffer: post als concept naar het eigen Buffer-account van Vinchem, in 4:5 (Instagram + Facebook) en 9:16 (story), met een eigen veld "Tekst bij de post". (Patrick)
 
 - 2026-11-18: posts met twee foto's: groot + klein, stempel over de rand van de grote foto. Briefing heeft twee uploadvelden. (Patrick)
 

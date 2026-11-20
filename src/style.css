@@ -463,3 +463,22 @@ button { font: inherit; cursor: pointer; }
 .brief-photo .link { justify-self: start; font-size: 14px; }
 .picked { font-size: 13px; color: var(--primary); }
 .bank-only[hidden] { display: none; }
+
+/* ---------- Buffer ---------- */
+.st-dl-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.st-buffer { font-size: 18px; padding: 14px 28px; }
+.st-buffer[hidden] { display: none; }
+.buffer-dlg { border: 0; border-radius: 18px; padding: 0; width: min(720px, calc(100vw - 24px)); max-height: calc(100vh - 32px); color: var(--ink); }
+.buffer-dlg::backdrop { background: rgb(0 0 0 / .5); }
+.buffer-in { padding: 24px; display: grid; gap: 14px; }
+.buffer-previews { display: flex; gap: 16px; align-items: flex-end; }
+.buffer-prev { margin: 0; width: 160px; font-size: 13px; }
+.buffer-prev img { width: 100%; display: block; border-radius: 4px; box-shadow: 0 0 0 1px var(--line); }
+.buffer-prev .bad { color: var(--ui-error); }
+.buffer-caption { display: grid; gap: 4px; font-weight: 700; font-size: 15px; }
+.buffer-caption textarea { font: inherit; font-weight: 400; font-size: 16px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; }
+.buffer-targets { border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; display: grid; gap: 6px; }
+.buffer-targets legend { font-weight: 700; font-size: 15px; padding: 0 4px; }
+.buffer-target { display: flex; gap: 8px; align-items: center; font-size: 15px; }
+.buffer-msg:empty { display: none; }
+.buffer-msg { background: var(--surface); border-radius: 8px; padding: 10px 12px; }

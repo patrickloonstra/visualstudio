@@ -114,6 +114,62 @@ function photoUrl(string $brand, string $id, int $v): string {
     return "$api/?action=photo&brand=$brand&id=$id&v=$v";
 }
 
+/** Buffer-instellingen voor een merk uit config.php, of null als ze ontbreken. */
+function bufferConfig(array $config, string $brand): ?array {
+    $b = $config['buffer'][$brand] ?? null;
+    if (!is_array($b) || empty($b['api_key'])) return null;
+    $b['endpoint'] ??= 'https://api.buffer.com';
+    if (empty($b['organization_id'])) {
+        // Niet ingevuld: de eerste organisatie van het account gebruiken.
+        $orgs = bufferCall($b['api_key'], 'query GetOrganizations { account { organizations { id name } } }', [], $b['endpoint'])['account']['organizations'] ?? [];
+        if (!$orgs) throw new RuntimeException('Geen organisatie gevonden in dit Buffer-account.');
+        $b['organization_id'] = $orgs[0]['id'];
+    }
+    return $b;
+}
+
+/** GraphQL-verzoek aan Buffer (https://api.buffer.com). Gooit RuntimeException met een leesbare melding. */
+function bufferCall(string $key, string $query, array $variables, string $endpoint = 'https://api.buffer.com'): array {
+    $ch = curl_init($endpoint);
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 30,
+        CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'Authorization: Bearer ' . $key],
+        CURLOPT_POSTFIELDS => json_encode(['query' => $query, 'variables' => $variables ?: new stdClass()]),
+    ]);
+    $body = curl_exec($ch);
+    $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $err = curl_error($ch);
+    curl_close($ch);
+    if ($body === false) throw new RuntimeException("Buffer niet bereikbaar: $err");
+    $json = json_decode((string)$body, true);
+    if ($code === 401) throw new RuntimeException('Buffer weigert de API-sleutel (401). Controleer api_key in config.php.');
+    if ($code === 429) throw new RuntimeException('Te veel verzoeken aan Buffer. Probeer het over een kwartier opnieuw.');
+    if (!empty($json['errors'])) throw new RuntimeException('Buffer: ' . ($json['errors'][0]['message'] ?? 'onbekende fout'));
+    if ($code >= 400 || !isset($json['data'])) throw new RuntimeException("Buffer gaf een fout ($code).");
+    return $json['data'];
+}
+
+/**
+ * Afbeeldingen voor Buffer staan als gewone bestanden in exports/ naast de tool: een direct adres dat op .png eindigt,
+ * zodat Buffer en Instagram ze zonder login kunnen ophalen. De naam is 32 willekeurige tekens; zoekmachines worden
+ * geweerd via de .htaccess van de tool. Deze afbeeldingen komen toch op social media, dus ze zijn niet geheim.
+ */
+function exportDir(): string {
+    $d = dirname(__DIR__) . '/exports';
+    if (!is_dir($d) && !mkdir($d, 0755, true) && !is_dir($d)) fail(500, 'Kan de map exports niet maken.');
+    if (!is_file("$d/index.html")) @file_put_contents("$d/index.html", ''); // geen bestandslijst tonen
+    return $d;
+}
+
+function exportUrl(string $name): string {
+    $https = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $tool = rtrim(str_replace('\\', '/', dirname(dirname($_SERVER['SCRIPT_NAME'] ?? '/api/index.php'))), '/');
+    return ($https ? 'https' : 'http') . "://$host$tool/exports/$name";
+}
+
 /** Fotobestanden in een map (zonder GLOB_BRACE, dat niet overal bestaat). */
 function bankFiles(string $dir, string $pattern): array {
     return array_values(array_filter(glob("$dir/$pattern.*") ?: [], fn($f) => in_array(strtolower(pathinfo($f, PATHINFO_EXTENSION)), ['jpg', 'png', 'webp'], true)));
@@ -282,6 +338,69 @@ switch ($action) {
         header('Content-Length: ' . filesize($f));
         readfile($f);
         exit;
+    }
+
+    // ---------- Buffer: post als concept naar Buffer ----------
+    case 'buffer-channels': {
+        $brand = brandParam($config);
+        requireAuth($brand);
+        try { $b = bufferConfig($config, $brand); } catch (RuntimeException $e) { fail(502, $e->getMessage()); }
+        if (!$b) out(200, ['configured' => false, 'channels' => []]);
+        $res = bufferCall($b['api_key'], 'query GetChannels($organizationId: OrganizationId!) { channels(input: { organizationId: $organizationId }) { id name displayName service type isLocked isDisconnected } }',
+            ['organizationId' => $b['organization_id']], $b['endpoint']);
+        $channels = array_values(array_filter($res['channels'] ?? [], fn($c) =>
+            in_array($c['service'], ['instagram', 'facebook'], true) && !$c['isLocked'] && !$c['isDisconnected']));
+        out(200, ['configured' => true, 'channels' => $channels]);
+    }
+
+    case 'buffer-send': {
+        if ($method !== 'POST') fail(405, 'Alleen POST.');
+        $brand = brandParam($config);
+        requireAuth($brand);
+        try { $b = bufferConfig($config, $brand); } catch (RuntimeException $e) { fail(502, $e->getMessage()); }
+        if (!$b) fail(400, 'Buffer is nog niet ingesteld voor dit merk (config.php).');
+        $in = input();
+        $text = mb_substr((string)($in['caption'] ?? ''), 0, 2200);
+        // 1. Afbeeldingen per formaat opslaan op een vast, onraadbaar adres (Buffer haalt ze op bij publiceren).
+        $urls = [];
+        foreach ((array)($in['images'] ?? []) as $format => $src) {
+            if (!preg_match('/^[a-z0-9]{2,12}$/', (string)$format)) fail(400, 'Ongeldig formaat.');
+            if (!is_string($src) || !str_starts_with($src, 'data:image/png;base64,')) fail(400, 'Afbeelding moet PNG zijn.');
+            $bin = base64_decode(substr($src, 22), true);
+            if ($bin === false || strlen($bin) > MAX_PHOTO) fail(413, 'Afbeelding te groot.');
+            if ((new finfo(FILEINFO_MIME_TYPE))->buffer($bin) !== 'image/png') fail(400, 'Dit is geen PNG.');
+            $name = bin2hex(random_bytes(16)) . '.png';
+            write_atomic(exportDir() . "/$name", $bin);
+            $urls[$format] = exportUrl($name);
+        }
+        // 2. Per gekozen kanaal en formaat een concept in Buffer.
+        $results = [];
+        foreach ((array)($in['targets'] ?? []) as $t) {
+            $channelId = (string)($t['channelId'] ?? '');
+            $service = (string)($t['service'] ?? '');
+            $kind = ($t['kind'] ?? 'post') === 'story' ? 'story' : 'post';
+            $format = (string)($t['format'] ?? '');
+            if (!preg_match('/^[A-Za-z0-9]{6,40}$/', $channelId) || !isset($urls[$format])) { $results[] = ['ok' => false, 'error' => 'Ongeldig kanaal of formaat.']; continue; }
+            $post = [
+                'channelId' => $channelId,
+                'text' => $text,
+                'schedulingType' => ($t['notification'] ?? false) ? 'notification' : 'automatic',
+                'mode' => 'addToQueue',
+                'saveToDraft' => true,
+                'assets' => [['image' => ['url' => $urls[$format]]]],
+            ];
+            if ($service === 'instagram') $post['metadata'] = ['instagram' => ['type' => $kind, 'shouldShareToFeed' => $kind === 'post']];
+            if ($service === 'facebook') $post['metadata'] = ['facebook' => ['type' => $kind]];
+            try {
+                $res = bufferCall($b['api_key'], 'mutation CreatePost($input: CreatePostInput!) { createPost(input: $input) { ... on PostActionSuccess { post { id } } ... on MutationError { message } } }', ['input' => $post], $b['endpoint']);
+                $r = $res['createPost'] ?? [];
+                $results[] = isset($r['post']['id']) ? ['ok' => true, 'postId' => $r['post']['id'], 'channelId' => $channelId, 'kind' => $kind]
+                                                     : ['ok' => false, 'channelId' => $channelId, 'kind' => $kind, 'error' => (string)($r['message'] ?? 'Onbekende fout van Buffer.')];
+            } catch (RuntimeException $e) {
+                $results[] = ['ok' => false, 'channelId' => $channelId, 'kind' => $kind, 'error' => $e->getMessage()];
+            }
+        }
+        out(200, ['results' => $results]);
     }
 
     case 'photo': {

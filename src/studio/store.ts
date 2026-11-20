@@ -184,3 +184,17 @@ export async function bankUpload(src: string, name: string): Promise<BankPhoto> 
 export async function bankDelete(id: string) {
   await call("bank-delete", { id });
 }
+
+// ---------- Buffer (alleen online, sleutel staat op de server) ----------
+export type BufferChannel = { id: string; name: string; displayName?: string; service: "instagram" | "facebook"; type: string };
+export type BufferTarget = { channelId: string; service: string; kind: "post" | "story"; format: string; notification?: boolean };
+export type BufferResult = { ok: boolean; channelId?: string; kind?: string; postId?: string; error?: string };
+
+export async function bufferChannels(): Promise<{ configured: boolean; channels: BufferChannel[] }> {
+  if (!bankAvailable()) return { configured: false, channels: [] };
+  return call("buffer-channels");
+}
+
+export async function bufferSend(caption: string, images: Record<string, string>, targets: BufferTarget[]): Promise<BufferResult[]> {
+  return (await call<{ results: BufferResult[] }>("buffer-send", { caption, images, targets })).results;
+}
